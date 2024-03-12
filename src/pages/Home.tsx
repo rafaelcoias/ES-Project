@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getMetadata, listAll, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import IscteLogo from '../content/imgs/logos/iscte.png';
 
 export default function Home() {
     const [files, setFiles] = useState<any>(null);
@@ -44,7 +45,7 @@ export default function Home() {
         }
     };
 
-    function getDate(date:string) {
+    function getDate(date: string) {
         date = date.split('T')[0];
         if (date) {
             const year = date.split('-')[0]
@@ -57,14 +58,10 @@ export default function Home() {
     }
     return (
         <div className='w-full h-screen pt-[5rem] px-[8vw] flex flex-col gap-8 text-[var(--blue)]'>
+            <img src={IscteLogo} alt="logo" className='w-[15rem]' />
             <h1 className='text-[1.5rem] quatro:text-[2rem] font-bold'>Bem-vindo de volta!</h1>
-            <div className='w-full flex justify-center'>
-                <div className='flex flex-col gap-4 border-2 border-black p-5 rounded-[20px] justify-center w-[18rem]'>
-                    <p className='text-center'><span className='text-black'>+</span> Importar novo ficheiro</p>
-                    <input type="file" onChange={handleFileChange} />
-                </div>
-            </div>
-            <div className='grid grid-cols-1 oito:grid-cols-2 gap-8'>
+            <p className='text-black'>Ficheiros:</p>
+            <div className='grid grid-cols-1 oito:grid-cols-2 gap-4'>
                 {
                     files && files.length !== 0 ? files.map((ele: any, index: number) => {
                         return (
@@ -74,8 +71,14 @@ export default function Home() {
                             </div>
                         )
                     }) :
-                        <p className='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%]'>Nenhum resultado</p>
+                        <p className=''>Nenhum ficheiro guardado</p>
                 }
+            </div>
+            <div className='w-full flex justify-center'>
+                <div className='flex flex-col gap-4 border-2 border-black p-5 rounded-[20px] justify-center w-[18rem]'>
+                    <p className='text-center'><span className='text-black'>+</span> Importar novo ficheiro</p>
+                    <input type="file" onChange={handleFileChange} />
+                </div>
             </div>
         </div>
     );
