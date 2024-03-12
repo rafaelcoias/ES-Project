@@ -1,0 +1,38 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@font-face {
+  font-family: Agrandir;
+  src: url('./content/fonts/Agrandir-Regular.ttf');
+}
+
+@font-face {
+  font-family: PoppinsB;
+  src: url('./content/fonts/Poppins-Bold.ttf');
+}
+
+@font-face {
+  font-family: PoppinsM;
+  src: url('./content/fonts/Poppins-Medium.ttf');
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: PoppinsM, sans-serif;
+}
+
+:root {
+  --blue: #0d28c2;
+}
+
+body {
+  background-color: #eeeeee;
+}
+
+.font-mybold {
+  font-family: PoppinsB, sans-serif;
+}
