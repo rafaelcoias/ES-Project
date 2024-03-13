@@ -2,6 +2,8 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Definir as fontes que vamos usar na nossa App */
+
 @font-face {
   font-family: Agrandir;
   src: url('./content/fonts/Agrandir-Regular.ttf');
@@ -17,7 +19,12 @@
   src: url('./content/fonts/Poppins-Medium.ttf');
 }
 
+/* Definir variaveis css */
+:root {
+  --blue: #0d28c2;
+}
 
+/* Definir layout geral de todos os elementos */
 * {
   margin: 0;
   padding: 0;
@@ -25,13 +32,11 @@
   font-family: PoppinsM, sans-serif;
 }
 
-:root {
-  --blue: #0d28c2;
-}
-
 body {
   background-color: #eeeeee;
 }
+
+/* Classes gerais */
 
 .font-mybold {
   font-family: PoppinsB, sans-serif;

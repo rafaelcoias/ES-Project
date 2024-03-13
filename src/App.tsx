@@ -5,6 +5,14 @@ import Home from './pages/Home';
 import FilePage from './pages/FilePage';
 import NotFoundPage from './pages/NotFound';
 
+// Este é o ficheiro principal onde vai estar a App toda,
+// É usado reac-router-dom para criar rotas
+// de navegação pela App. Cada route é uma página diferente.
+// O 'index' significa que é a route principal da app (root).
+// O path define cada Route, se o URL estiver igual ao 'path',
+// a app mostra a página referida em 'element'.
+// O path='*' serve para qualquer route não definida. 
+
 function App() {
 	return (
 		<>
@@ -12,7 +20,7 @@ function App() {
 				<Routes>
 					<Route index element={<Home />} />
 					<Route path="/file/:name" element={<FilePage />} />
-					<Route path="*" element={<NotFoundPage/>} />
+					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</BrowserRouter>
 		</>
