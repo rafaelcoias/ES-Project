@@ -1,4 +1,4 @@
-# Nome do Grupo: Quarta-Feira-LEI-Grupo-A <br><br>
+# Nome do Grupo: Quarta-Feira-LEI-Grupo-A <br>
 
 ## Membros do Grupo: <br>
 **- Nome:** André Caraus | **Número de Estudante:** 105065 | **Username no GitHub:** sushibad <br>
