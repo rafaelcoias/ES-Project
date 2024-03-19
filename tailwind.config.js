@@ -6,6 +6,7 @@ module.exports = {
       "quatro": '400px',
       "seis": '600px',
       "oito": '800px',
+      "mil": '1000px',
     }
   },
   variants: {

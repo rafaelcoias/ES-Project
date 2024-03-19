@@ -23,7 +23,7 @@ export function exportExcel(data, filename) {
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
     const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
-    saveAs(blob, `${filename}.xlsx`);
+    saveAs(blob, `${filename}`);
 }
 
 export function exportJson(data, filename) {

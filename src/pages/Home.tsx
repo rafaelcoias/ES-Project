@@ -16,7 +16,6 @@ export default function Home() {
     useEffect(() => {
         async function fetchData() {
             const githubRepoPath = 'rafaelcoias/ES-Project/contents/db';
-
             try {
                 const response = await fetch(`https://api.github.com/repos/${githubRepoPath}`);
                 const data = await response.json();
@@ -50,9 +49,17 @@ export default function Home() {
         }
     };
 
+    if (!files) {
+        return (
+            <div className='w-full h-screen pt-[5rem] px-[4vw] flex flex-col gap-8 text-[var(--blue)]'>
+                <h1 className='text-[2rem] font-bold text-black animate-bounce'>A carregar...</h1>
+            </div>
+        )
+    }
+
     // Aqui estará tudo o que será apresentado na página Home.
     return (
-        <div className='w-full h-screen pt-[5rem] px-[8vw] flex flex-col gap-8 text-[var(--blue)]'>
+        <div className='w-full min-h-screen py-[5rem] px-[8vw] flex flex-col gap-8 text-[var(--blue)]'>
             <img src={IscteLogo} alt="logo" className='w-[15rem]' />
             <h1 className='text-[1.5rem] quatro:text-[2rem] font-bold'>Bem-vindo de volta!</h1>
             <p className='text-black'>Ficheiros:</p>
