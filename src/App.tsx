@@ -12,7 +12,6 @@ import NotFoundPage from './pages/NotFound';
 // O path define cada Route, se o URL estiver igual ao 'path',
 // a app mostra a página referida em 'element'.
 // O path='*' serve para qualquer route não definida. 
-
 function App() {
 	return (
 		<>
