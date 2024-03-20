@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { ref, uploadBytes } from 'firebase/storage';
-import { storage } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import IscteLogo from '../content/imgs/logos/iscte.png';
 
@@ -11,44 +9,64 @@ export default function Home() {
     const [files, setFiles] = useState<any>(null);
 
     // Este useEffect só vai correr 1 vez, quando a página renderiza.
-    // Serve para ir buscar ao firebase todos os ficheiros guardados 
-    // no firestore (um bucket/cloud padrão para ficheiros).
+    // Serve para ir buscar à base de dados local todos os ficheiros guardados
+    // usando o backend
     useEffect(() => {
-        async function fetchData() {
-            const githubRepoPath = 'rafaelcoias/ES-Project/contents/db';
-            try {
-                const response = await fetch(`https://api.github.com/repos/${githubRepoPath}`);
-                const data = await response.json();
-                const filesData = data.filter((file:any) => file.name.endsWith('.csv') || file.name.endsWith('.xls') || file.name.endsWith('.xlsx') || file.name.endsWith('.xlsm'))
-                    .map((file:any) => ({
-                        name: file.name,
-                        url: file.download_url,
-                    }));
-                setFiles(filesData);
-            } catch (error) {
-                console.error('Error fetching files from GitHub', error);
-            }
-        }
-        fetchData();
+        fetch('/files')
+            .then(response => response.json())
+            .then(data => setFiles(data))
+            .catch(error => console.error('There was an error!', error));
     }, []);
 
     // Quando o utilizador submete um ficheiro, verificamos se é um ficheiro excel,
-    // se for, guardamos no array de ficheiros 'files' e guardamos no firebase-storage.
-    // Caso não seja um ficheiro excel, aparece uma mensagem ao utilizador
+    // se for, guardamos no array de ficheiros 'files' e guardamos na base de dados local enviando para o backend.
+    // Caso não seja um ficheiro excel, aparece uma mensagem ao utilizador a avisar que o ficheiro não é válido.
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         if (file && (file.name.endsWith('.csv') || file.name.endsWith('.xls') || file.name.endsWith('.xlsx') || file.name.endsWith('.xlsm'))) {
-            const storageRef = ref(storage, file.name);
-            const snapshot = await uploadBytes(storageRef, file);
-            void snapshot;
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (response.ok) {
+                    alert('Ficheiro adicionado!');
+                } else {
+                    alert('Upload do ficheiro falhou!');
+                }
+            } catch (error) {
+                console.error('Upload do ficheiro falhou:', error);
+                alert('Upload do ficheiro falhou!');
+            }
             if (files) setFiles((prev: any) => [...prev, file]);
             else setFiles([file])
-            alert('Ficheiro adicionado!');
         } else {
             alert('Por favor escolha um ficheiro com formato excel.');
         }
     };
 
+    // Apaga um ficheiro da base de dados local e do array de ficheiros 'files'
+    const deleteFile = async (fileName: string) => {
+        if (!window.confirm('Tem a certeza que quer apagar este ficheiro?')) return;
+        try {
+            const response = await fetch(`/file/${fileName}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setFiles((prev: any) => prev.filter((file: any) => file.name !== fileName));
+                alert('Ficheiro apagado!');
+            } else {
+                alert('Apagar ficheiro falhou!');
+            }
+        } catch (error) {
+            console.error('Apagar ficheiro falhou:', error);
+            alert('Apagar ficheiro falhou!');
+        }
+    };
+
+    // Se ainda não houver ficheiros, aparece uma mensagem a dizer que está a carregar
     if (!files) {
         return (
             <div className='w-full h-screen pt-[5rem] px-[4vw] flex flex-col gap-8 text-[var(--blue)]'>
@@ -67,8 +85,12 @@ export default function Home() {
                 {
                     files && files.length !== 0 ? files.map((file: any, index: number) => {
                         return (
-                            <div key={index} onClick={() => navigate(`/file/${file.name}`, { state: { file: { file } } })} className='flex justify-between items-center bg-[var(--blue)] rounded-[25px] oito:h-[6rem] w-full text-white p-4 cursor-pointer border-[3px] border-[transparent] hover:border-black quatro:flex-row flex-col gap-4'>
-                                <p className='flex flex-col w-full text-left'><span className=''>Nome: </span> {file?.name}</p>
+                            <div key={index} className='flex justify-between items-center bg-[var(--blue)] rounded-[25px] oito:h-[6rem] w-full text-white p-4 cinco:flex-row flex-col gap-4'>
+                                <p className='flex flex-col w-full text-left max-w-[20rem] overflow-hidden'><span className=''>Nome: </span> {file?.name}</p>
+                                <div className='flex gap-2 cinco:flex-col'>
+                                    <button onClick={() => navigate(`/file/${file.name}`)} className='rounded-[20px] px-4 py-1 border-white border-[2px] hover:bg-white hover:text-black transition-all duration-300'>abrir</button>
+                                    <button onClick={() => deleteFile(file?.name)} className='border-[red] border-[2px] rounded-[20px] px-4 py-1 hover:bg-[red] transition-all duration-300'>remover</button>
+                                </div>
                             </div>
                         )
                     }) :

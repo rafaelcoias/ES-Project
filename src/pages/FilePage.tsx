@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { exportExcel, exportJson } from '../export';
 import ExportIcon from '../content/imgs/icons/download.png'
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
 export default function FilePage() {
     const navigate = useNavigate();
-    const location = useLocation();
-    const { file } = location.state?.file;
 
     // Vamos buscar o nome do ficheiro que esta no URL
     const { name } = useParams();
@@ -24,37 +22,51 @@ export default function FilePage() {
     // Numero de linhas a mostrar
     const [rowsToDisplay, setRowsToDisplay] = useState<number>(20);
 
+    // Este useEffect só vai correr 1 vez, quando a página renderiza.
+    // Serve para ir buscar o ficheiro ao backend e ler o ficheiro excel
     useEffect(() => {
         const readExcelFile = async () => {
             try {
-                // Ir buscar o ficheiro ao Github e transformar em JSON
-                const response = await fetch(file.url);
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const decoder = new TextDecoder('utf-8');
-                const text = decoder.decode(data);
-                const workbook = XLSX.read(text, { type: 'binary' });
-                const worksheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[worksheetName];
-                let jsonData = XLSX.utils.sheet_to_json(worksheet);
-                // Remover os espaços em branco (usando o trim)
-                // dos nomes das colunas. Isto estava a dar problemas 
-                // com os filtros que nao tinham espacos em branco
-                jsonData = jsonData.map((row: any, index: number) => {
-                    const trimmedRow: any = {};
-                    Object.keys(row).forEach((key) => {
-                        trimmedRow[key.trim()] = row[key];
+                // Ir buscar o ficheiro ao backend
+                const response = await fetch(`/file/${name}`);
+                if (!response.ok) {
+                    console.error('Erro ao ir buscar o ficheiro');
+                    alert('Erro ao ir buscar o ficheiro!');
+                    return;
+                }
+                const blob = await response.blob();
+                // Usar FileReader para ler o ficheiro excel
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const arrayBuffer = e.target?.result as ArrayBuffer;
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[worksheetName];
+                    let jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    // Remover espacos em branco para nao haver problemas com os filtros
+                    jsonData = jsonData.map((row:any) => {
+                        const trimmedRow:any = {};
+                        Object.keys(row).forEach(key => {
+                            trimmedRow[key.trim()] = row[key];
+                        });
+                        return trimmedRow;
                     });
-                    return trimmedRow;
-                });
-                setFileData(jsonData);
+                    setFileData(jsonData);
+                };
+                // Em caso de erro ao ler o ficheiro
+                reader.onerror = (error) => {
+                    console.error('Erro ao ler o ficheiro:', error);
+                    alert('Erro ao ler o ficheiro!');
+                };
+                reader.readAsArrayBuffer(blob);
             } catch (error) {
-                console.error("Error reading file:", error);
+                console.error("Erro ao ler o ficheiro:", error);
                 alert('Erro ao ler o ficheiro!');
             }
         };
         readExcelFile();
-    }, [file, rowsToDisplay]);
+    }, [name, rowsToDisplay]);
 
     useEffect(() => {
         // Função para ir buscar a primeira semana do ano
@@ -153,6 +165,8 @@ export default function FilePage() {
         exportExcel(tableData, name);
     }
 
+
+    // Se ainda não houver ficheiro, aparece uma mensagem a dizer que está a carregar
     if (!filteredData) {
         return (
             <div className='w-full h-screen pt-[5rem] px-[4vw] flex flex-col gap-8 text-[var(--blue)]'>
@@ -180,8 +194,8 @@ export default function FilePage() {
                         Exportar ficheiro
                     </div>
                     <div className='flex justify-center gap-4'>
-                        <button className='w-[8rem] px-4 py-1 rounded-full bg-[var(--blue)] text-white' onClick={handleExportJson}>JSON</button>
-                        <button className='w-[8rem] px-4 py-1 rounded-full bg-[var(--blue)] text-white' onClick={handleExportExcel}>Excel</button>
+                        <button className='w-[8rem] px-4 py-1 rounded-full bg-[var(--blue)] text-white hover:border-black border-[transparent] border-[2px]' onClick={handleExportJson}>JSON</button>
+                        <button className='w-[8rem] px-4 py-1 rounded-full bg-[var(--blue)] text-white  hover:border-black border-[transparent] border-[2px]' onClick={handleExportExcel}>Excel</button>
                     </div>
                 </div>
             </div>
