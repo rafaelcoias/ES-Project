@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { exportExcel, exportJson } from "../export";
-import ExportIcon from "../content/imgs/icons/download.png";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
+import ExportIcon from "../content/imgs/icons/download.png";
+import { exportExcel, exportJson } from "../export";
 
 /**
  * Componente para exibir uma página com detalhes de um arquivo específico.
@@ -15,8 +15,9 @@ import * as XLSX from "xlsx";
 export default function FilePage() {
   const navigate = useNavigate();
 
+  
   // Vamos buscar o nome do ficheiro que esta no URL
-  const { name } = useParams();
+  const { name="" } = useParams<string>();
 
   // Variaveis
   // Informacao do ficheiro sem alteracoes
