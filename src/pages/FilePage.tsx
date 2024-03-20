@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { exportExcel, exportJson } from "../export";
+import ExportIcon from "../content/imgs/icons/download.png";
 import { useNavigate, useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
-import ExportIcon from "../content/imgs/icons/download.png";
-import { exportExcel, exportJson } from "../export";
 
 /**
  * Componente para exibir uma página com detalhes de um arquivo específico.
@@ -15,9 +15,8 @@ import { exportExcel, exportJson } from "../export";
 export default function FilePage() {
   const navigate = useNavigate();
 
-  
   // Vamos buscar o nome do ficheiro que esta no URL
-  const { name="" } = useParams<string>();
+  const { name = "" } = useParams<string>();
 
   // Variaveis
   // Informacao do ficheiro sem alteracoes
@@ -78,7 +77,7 @@ export default function FilePage() {
   }, [name, rowsToDisplay]);
 
   useEffect(() => {
-    // Função para ir buscar a primeira semana do ano
+    // Função para colocar o mês primeiro que o dia, para assim conseguirmos usar o Date
     const convertDate = (dateStr: string) => {
       const parts = dateStr.toString().split("/");
       return new Date(`${parts[1]}/${parts[0]}/${parts[2]}`);
