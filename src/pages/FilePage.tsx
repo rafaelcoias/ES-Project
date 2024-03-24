@@ -252,7 +252,70 @@ export default function FilePage() {
     }));
   };
   
+  const handleUpdateFile = () => {
+    // Verifique se há um arquivo selecionado para atualizar
+    if (!tableData || tableData.length === 0) {
+      alert("Nenhum arquivo disponível para atualizar");
+      return;
+    }
+  
+    // Implemente a lógica para apagar o arquivo atual
+    fetch(`/file/${name}`, {
+      method: "DELETE"
+    })
+      .then(response => {
+        if (response.ok) {
+          // O arquivo foi apagado com sucesso, agora você pode criar um novo com os dados atualizados
+          // Implemente a lógica para criar o novo arquivo com os dados atualizados
+          createNewFileWithUpdatedData();
+        } else {
+          console.error("Erro ao apagar o arquivo:", response.statusText);
+          alert("Erro ao apagar o arquivo!");
+        }
+      })
+      .catch(error => {
+        console.error("Erro ao apagar o arquivo:", error);
+        alert("Erro ao apagar o arquivo!");
+      });
+  };
+  
+  const createNewFileWithUpdatedData = () => {
+    // Criar um novo Workbook
+    const wb = XLSX.utils.book_new();
 
+    // Converter os dados para o formato de planilha
+    const ws = XLSX.utils.json_to_sheet(tableData);
+
+    // Adicionar a planilha ao Workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+    // Converter o Workbook em um Blob
+    const wbBlob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'binary' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    // Criar um FormData e adicionar o Blob
+    const formData = new FormData();
+    formData.append("file", wbBlob, `${name.split(".")[0]}.csv`);
+
+    // Enviar a requisição para o servidor
+    fetch("/upload", {
+        method: "POST",
+        body: formData,
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Ficheiro adicionado!");
+        } else {
+            alert("Upload do ficheiro falhou!");
+        }
+    })
+    .catch(error => {
+        console.error("Upload do ficheiro falhou:", error);
+        alert("Upload do ficheiro falhou!");
+    });
+}
+
+
+  
   // Se ainda não houver ficheiro, aparece uma mensagem a dizer que está a carregar
   if (!filteredData) {
     return (
@@ -324,10 +387,7 @@ export default function FilePage() {
           <option value={500}>500</option>
         </select>
         <button
-          onClick={() => {
-            // Aqui você pode implementar a lógica para atualizar o número de colunas a exibir
-            // com base nas suas necessidades
-          }}
+          onClick={() => {handleUpdateFile() }}
           className="px-3 py-1 bg-[var(--blue)] text-white hover:border-black border-[transparent] border-[2px] rounded-[20px] ml-auto"
         >
           Gravar Localmente
