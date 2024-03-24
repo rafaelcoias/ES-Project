@@ -323,6 +323,15 @@ export default function FilePage() {
           <option value={200}>200</option>
           <option value={500}>500</option>
         </select>
+        <button
+          onClick={() => {
+            // Aqui você pode implementar a lógica para atualizar o número de colunas a exibir
+            // com base nas suas necessidades
+          }}
+          className="px-3 py-1 bg-[var(--blue)] text-white hover:border-black border-[transparent] border-[2px] rounded-[20px] ml-auto"
+        >
+          Gravar Localmente
+        </button>
       </div>
       <div className="relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white">
         <table className="w-full text-left text-[.8rem] text-black">
