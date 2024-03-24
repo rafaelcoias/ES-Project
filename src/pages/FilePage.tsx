@@ -29,6 +29,11 @@ export default function FilePage() {
   const [filtros, setFiltros] = useState<any>({});
   // Numero de linhas a mostrar
   const [rowsToDisplay, setRowsToDisplay] = useState<number>(20);
+  //Aramzena a linha selecionada
+  const [editRow, setEditRow] = useState(-1);
+  //Utilizado para armazenar os valores dos inputs de edição
+  const [inputValues, setInputValues] = useState<any[]>([]);
+
 
   // Este useEffect só vai correr 1 vez, quando a página renderiza.
   // Serve para ir buscar o ficheiro ao backend e ler o ficheiro excel
@@ -214,6 +219,40 @@ export default function FilePage() {
     exportExcel(tableData, name);
   }
 
+  const handleEdit=(rowIndex:number)=>{
+    setEditRow(rowIndex);
+    // Define os valores iniciais dos campos de entrada com base nos valores atuais da linha
+    setInputValues(filteredData[rowIndex]);
+  }
+
+ // Função para sair do modo de edição e atualizar a linha
+  const handleUpdate = (rowIndex: number) => {
+    // Obtém a linha a ser atualizada
+    const updatedRow = inputValues;
+
+    // Cria uma cópia dos dados filtrados para evitar mutações diretas no estado
+    const updatedData = [...filteredData];
+
+    // Atualiza os valores na linha com os valores dos campos de entrada
+    updatedData[rowIndex] = updatedRow;
+
+    // Atualiza o estado com os dados atualizados
+    setTableData(updatedData);
+
+    // Limpa o estado de edição
+    setEditRow(-1);
+  };
+
+  // Função para atualizar os valores durante o modo de edição
+  const handleInputChange = (key: string, value: string) => {
+    // Atualiza o estado dos valores de entrada com a nova alteração
+    setInputValues((prevInputValues) => ({
+      ...prevInputValues,
+      [key]: value,
+    }));
+  };
+  
+
   // Se ainda não houver ficheiro, aparece uma mensagem a dizer que está a carregar
   if (!filteredData) {
     return (
@@ -308,6 +347,12 @@ export default function FilePage() {
                     </div>
                   </th>
                 ))}
+                {/* Adicionar coluna "EDITAR" no final da tabela */}
+              <th className="sticky top-0">
+              <div className="border-[1px] border-black p-6 min-w-[10rem] bg-[white]">
+                <p className="whitespace-nowrap text-center">EDITAR</p>
+              </div>
+              </th>
             </tr>
           </thead>
           {/* Body/informação da tabela */}
@@ -315,27 +360,65 @@ export default function FilePage() {
             {filteredData && filteredData.length > 0 ? (
               filteredData
                 .slice(0, rowsToDisplay)
-                .map((row: number, index: number) => (
+                .map((row: any, rowIndex: number) => (
                   <tr
-                    key={index}
-                    className={` hover:bg-[#d8d8d8] cursor-pointer ${
-                      index % 2 === 0 && "bg-[#eeeeee]"
+                    key={rowIndex}
+                    className={`hover:bg-[#d8d8d8] cursor-pointer ${
+                      rowIndex % 2 === 0 && "bg-[#eeeeee]"
                     }`}
                   >
-                    {Object.values(row).map((value: any, index: number) => (
-                      <td
-                        key={index}
-                        className="p-2 border-[1px] border-black whitespace-nowrap"
-                      >
-                        {value}
-                      </td>
-                    ))}
+                    {rowIndex === editRow ? (
+                      // Se rowIndex === editRow, renderize inputs para cada valor da linha
+                      Object.keys(row).map((key: any, colIndex: number) => (
+                        <td
+                          key={colIndex}
+                          className="p-2 border-[1px] border-black whitespace-nowrap"
+                        >
+                          <input
+                            type="text"
+                            value={inputValues[key] || ""}
+                            onChange={(e) => handleInputChange(key, e.target.value)}
+                          />
+                        </td>
+
+                      ))
+                    ) : (
+                      // Caso contrário, renderize os valores normais da linha
+                      Object.values(row).map((value: any, colIndex: number) => (
+                        <td
+                          key={colIndex}
+                          className="p-2 border-[1px] border-black whitespace-nowrap"
+                        >
+                          {value}
+                        </td>
+                      ))
+                    )}
+                    {/* Adicione o botão de edição na última coluna */}
+                    <td className="p-2 border-[1px] border-black whitespace-nowrap">
+                      {rowIndex === editRow ? (
+                        // Se rowIndex === editRow, renderize o botão de "Update"
+                        <button
+                          onClick={() => handleUpdate(rowIndex)}
+                          className="px-4 py-1 bg-green-500 text-white hover:bg-white hover:text-green-500 rounded-md"
+                        >
+                          Update
+                        </button>
+                      ) : (
+                        // Caso contrário, renderize o botão de "Edit"
+                        <button
+                          onClick={() => handleEdit(rowIndex)}
+                          className="px-4 py-1 bg-blue-500 text-white hover:bg-white hover:text-blue-500 rounded-md"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
             ) : (
               <tr className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%]">
                 <td
-                  colSpan={Object.keys(tableData[0]).length}
+                  colSpan={Object.keys(tableData[0]).length + 1}
                   className="text-center text-[1.2rem]"
                 >
                   Sem resultados
