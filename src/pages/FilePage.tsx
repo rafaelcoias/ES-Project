@@ -219,13 +219,13 @@ export default function FilePage() {
     exportExcel(tableData, name);
   }
 
-  const handleEdit=(rowIndex:number)=>{
+  const handleEdit = (rowIndex: number) => {
     setEditRow(rowIndex);
     // Define os valores iniciais dos campos de entrada com base nos valores atuais da linha
     setInputValues(filteredData[rowIndex]);
   }
 
- // Função para sair do modo de edição e atualizar a linha
+  // Função para sair do modo de edição e atualizar a linha
   const handleUpdate = (rowIndex: number) => {
     // Obtém a linha a ser atualizada
     const updatedRow = inputValues;
@@ -251,71 +251,82 @@ export default function FilePage() {
       [key]: value,
     }));
   };
-  
-  const handleUpdateFile = () => {
+
+  const handleUpdateFile = async () => {
     // Verifique se há um arquivo selecionado para atualizar
-    if (!tableData || tableData.length === 0) {
-      alert("Nenhum arquivo disponível para atualizar");
-      return;
-    }
-  
-    // Implemente a lógica para apagar o arquivo atual
-    fetch(`/file/${name}`, {
-      method: "DELETE"
-    })
-      .then(response => {
-        if (response.ok) {
-          // O arquivo foi apagado com sucesso, agora você pode criar um novo com os dados atualizados
-          // Implemente a lógica para criar o novo arquivo com os dados atualizados
-          createNewFileWithUpdatedData();
-        } else {
-          console.error("Erro ao apagar o arquivo:", response.statusText);
-          alert("Erro ao apagar o arquivo!");
-        }
-      })
-      .catch(error => {
-        console.error("Erro ao apagar o arquivo:", error);
-        alert("Erro ao apagar o arquivo!");
-      });
-  };
-  
-  const createNewFileWithUpdatedData = () => {
-    // Criar um novo Workbook
     const wb = XLSX.utils.book_new();
-
-    // Converter os dados para o formato de planilha
     const ws = XLSX.utils.json_to_sheet(tableData);
-
-    // Adicionar a planilha ao Workbook
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
 
-    // Converter o Workbook em um Blob
-    const wbBlob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'binary' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    function s2ab(s: any) {
+      const buffer = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buffer);
+      for (let i = 0; i < s.length; i++) {
+        view[i] = s.charCodeAt(i) & 0xFF;
+      }
+      return buffer;
+    }
 
-    // Criar um FormData e adicionar o Blob
+    // Criar ficheiro Blob local
+    const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const formData = new FormData();
-    formData.append("file", wbBlob, `${name.split(".")[0]}.csv`);
+    formData.append("file", blob, name);
 
-    // Enviar a requisição para o servidor
-    fetch("/upload", {
+    // Dar upload do ficheiro para o guardar
+    try {
+      const response = await fetch("/upload", {
         method: "POST",
         body: formData,
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("Ficheiro adicionado!");
-        } else {
-            alert("Upload do ficheiro falhou!");
-        }
-    })
-    .catch(error => {
-        console.error("Upload do ficheiro falhou:", error);
-        alert("Upload do ficheiro falhou!");
-    });
-}
+      });
+      if (response.ok) {
+        alert("Ficheiro atualizado!");
+      } else {
+        alert("Atualização do ficheiro falhou!");
+      }
+    } catch (error) {
+      console.error("Atualização do ficheiro falhou:", error);
+      alert("Atualização do ficheiro falhou!");
+    }
+  };
+
+  //   const createNewFileWithUpdatedData = () => {
+  //     // Criar um novo Workbook
+  //     const wb = XLSX.utils.book_new();
+
+  //     // Converter os dados para o formato de planilha
+  //     const ws = XLSX.utils.json_to_sheet(tableData);
+
+  //     // Adicionar a planilha ao Workbook
+  //     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+  //     // Converter o Workbook em um Blob
+  //     const wbBlob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'binary' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  //     // Criar um FormData e adicionar o Blob
+  //     const formData = new FormData();
+  //     formData.append("file", wbBlob, `${name.split(".")[0]}.csv`);
+
+  //     // Enviar a requisição para o servidor
+  //     fetch("/upload", {
+  //         method: "POST",
+  //         body: formData,
+  //     })
+  //     .then(response => {
+  //         if (response.ok) {
+  //             alert("Ficheiro adicionado!");
+  //         } else {
+  //             alert("Upload do ficheiro falhou!");
+  //         }
+  //     })
+  //     .catch(error => {
+  //         console.error("Upload do ficheiro falhou:", error);
+  //         alert("Upload do ficheiro falhou!");
+  //     });
+  // }
 
 
-  
+
   // Se ainda não houver ficheiro, aparece uma mensagem a dizer que está a carregar
   if (!filteredData) {
     return (
@@ -386,12 +397,14 @@ export default function FilePage() {
           <option value={200}>200</option>
           <option value={500}>500</option>
         </select>
-        <button
-          onClick={() => {handleUpdateFile() }}
-          className="px-3 py-1 bg-[var(--blue)] text-white hover:border-black border-[transparent] border-[2px] rounded-[20px] ml-auto"
-        >
-          Gravar Localmente
-        </button>
+        <div>
+          <button
+            onClick={() => { handleUpdateFile() }}
+            className="px-3 py-1 bg-[var(--blue)] text-white hover:border-black border-[transparent] border-[2px] rounded-[20px] ml-auto"
+          >
+            Gravar Localmente
+          </button>
+        </div>
       </div>
       <div className="relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white">
         <table className="w-full text-left text-[.8rem] text-black">
@@ -416,11 +429,11 @@ export default function FilePage() {
                     </div>
                   </th>
                 ))}
-                {/* Adicionar coluna "EDITAR" no final da tabela */}
+              {/* Adicionar coluna "EDITAR" no final da tabela */}
               <th className="sticky top-0">
-              <div className="border-[1px] border-black p-6 min-w-[10rem] bg-[white]">
-                <p className="whitespace-nowrap text-center">EDITAR</p>
-              </div>
+                <div className="border-[1px] border-black p-6 min-w-[10rem] bg-[white]">
+                  <p className="text-center whitespace-nowrap">EDITAR</p>
+                </div>
               </th>
             </tr>
           </thead>
@@ -432,9 +445,8 @@ export default function FilePage() {
                 .map((row: any, rowIndex: number) => (
                   <tr
                     key={rowIndex}
-                    className={`hover:bg-[#d8d8d8] cursor-pointer ${
-                      rowIndex % 2 === 0 && "bg-[#eeeeee]"
-                    }`}
+                    className={`hover:bg-[#d8d8d8] cursor-pointer ${rowIndex % 2 === 0 && "bg-[#eeeeee]"
+                      }`}
                   >
                     {rowIndex === editRow ? (
                       // Se rowIndex === editRow, renderize inputs para cada valor da linha
@@ -447,6 +459,7 @@ export default function FilePage() {
                             type="text"
                             value={inputValues[key] || ""}
                             onChange={(e) => handleInputChange(key, e.target.value)}
+                            className="input"
                           />
                         </td>
 
@@ -466,17 +479,25 @@ export default function FilePage() {
                     <td className="p-2 border-[1px] border-black whitespace-nowrap">
                       {rowIndex === editRow ? (
                         // Se rowIndex === editRow, renderize o botão de "Update"
-                        <button
-                          onClick={() => handleUpdate(rowIndex)}
-                          className="px-4 py-1 bg-green-500 text-white hover:bg-white hover:text-green-500 rounded-md"
-                        >
-                          Update
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdate(rowIndex)}
+                            className="px-4 py-1 text-white bg-green-500 rounded-md hover:bg-white hover:text-green-500"
+                          >
+                            Update
+                          </button>
+                          <button
+                            onClick={() => setEditRow(-1)}
+                            className="px-4 py-1 text-black bg-yellow-300 rounded-md hover:bg-white "
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       ) : (
                         // Caso contrário, renderize o botão de "Edit"
                         <button
                           onClick={() => handleEdit(rowIndex)}
-                          className="px-4 py-1 bg-blue-500 text-white hover:bg-white hover:text-blue-500 rounded-md"
+                          className="px-4 py-1 text-white bg-blue-500 rounded-md hover:bg-white hover:text-blue-500"
                         >
                           Edit
                         </button>
