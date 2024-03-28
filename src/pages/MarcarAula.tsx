@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from "xlsx";
+import {gerarHorasPossiveis} from "../js/auxilioEscolhaAula";
 export default function MarcarAula() {
     //guardar as informações do ficheiro horario
     const [horariosFile, setHorariosFile] = useState<any>(null);
@@ -24,7 +25,18 @@ export default function MarcarAula() {
     const [uniqueItemsTurma, setUniqueItemsTurma] = useState<any>([]);
     const [selectedItemTurma, setSelectedItemTurma] = useState<any>(null);
     
-  
+    //escolha hora inicio e fim
+    const horas=gerarHorasPossiveis();
+    const [selectedItemHoraInicio, setSelectedItemHoraInicio] = useState<any>(null);
+    const [selectedItemHoraFim, setSelectedItemHoraFim] = useState<any>(null);
+
+    //escolha dia do ano
+    const [uniqueItemsDia, setUniqueItemsDia] = useState<any>([]);
+    const [selectedItemDia, setSelectedItemDia] = useState<any>(null);
+
+    //escolha dia da semana
+    const [uniqueItemsDiaSemana, setUniqueItemsDiaSemana] = useState<any>([]);
+    const [selectedItemDiaSemana, setSelectedItemDiaSemana] = useState<any>(null);
 
     // Função para lidar com a mudança de arquivo de horários
     const handleHorariosFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,48 +110,74 @@ export default function MarcarAula() {
     }
 
     useEffect(() => {
+        const mostrarUC = () => {
+            if (horariosFile) {
+                const filteredData: any[] = horariosFile.filter((row: any) => row[0].includes(selectedItemCurso));
+                const columnData: any[] = filteredData.map((row: any) => row[1]);
+                if (Array.isArray(columnData)) {
+                    const uniqueItems = Array.from(new Set(columnData));
+                    setUniqueItemsUC(uniqueItems);
+                    setSelectedItemUC(uniqueItems[0]); // Seleciona o primeiro item
+                } else {
+                    alert("Erro ao processar os dados do arquivo de horários.");
+                }
+            } 
+        };
+
         mostrarUC();
     }, [selectedItemCurso]);
 
-    const mostrarUC = () => {
-        if (horariosFile) {
-            const filteredData: any[] = horariosFile.filter((row: any) => row[0].includes(selectedItemCurso));
-            const columnData: any[] = filteredData.map((row: any) => row[1]);
-            if (Array.isArray(columnData)) {
-                const uniqueItems = Array.from(new Set(columnData));
-                setUniqueItemsUC(uniqueItems);
-                setSelectedItemUC(uniqueItems[0]); // Seleciona o primeiro item
-            } else {
-                alert("Erro ao processar os dados do arquivo de horários.");
-            }
-        } else {
-            alert("Não há dados disponíveis para mostrar UCs.");
-        }
-    };
 
 
     useEffect(()=>{
+        const mostrarTurmas = () => {
+            if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
+                const filteredDataUC: any[] = horariosFile.filter((row: any) =>row[1].includes(selectedItemUC) );
+                const filteredDataCurso: any[] = filteredDataUC.filter((row: any) =>  row[0].includes(selectedItemCurso));
+                const columnData: any[] = filteredDataCurso.map((row: any) => row[3]);
+                if (Array.isArray(columnData)) {
+                    const uniqueItems = Array.from(new Set(columnData));
+                    setUniqueItemsTurma(uniqueItems);
+                    setSelectedItemTurma(uniqueItems[0]); // Seleciona o primeiro item
+                } else {
+                    alert("Erro ao processar os dados do arquivo de horários.");
+                }
+            }
+        };
         mostrarTurmas();
     },[selectedItemUC]);
     
-    const mostrarTurmas = () => {
-        if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
-            const filteredDataUC: any[] = horariosFile.filter((row: any) =>row[1].includes(selectedItemUC) );
-            const filteredDataCurso: any[] = filteredDataUC.filter((row: any) =>  row[0].includes(selectedItemCurso));
-            const columnData: any[] = filteredDataCurso.map((row: any) => row[3]);
-            if (Array.isArray(columnData)) {
-                const uniqueItems = Array.from(new Set(columnData));
-                setUniqueItemsTurma(uniqueItems);
-                setSelectedItemTurma(uniqueItems[0]); // Seleciona o primeiro item
-            } else {
-                alert("Erro ao processar os dados do arquivo de horários.");
+    useEffect(()=>{
+        const mostrarDia = () => {
+            if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
+                const columnData: any[] = horariosFile.map((row: any) => row[8]);
+                if (Array.isArray(columnData)) {
+                    const uniqueItems = Array.from(new Set(columnData));
+                    setUniqueItemsDia(uniqueItems);
+                    setSelectedItemDia(uniqueItems[0]); // Seleciona o primeiro item
+                }
             }
-        } else {
-            alert("Não há dados disponíveis para mostrar Turmas.");
         }
-    };
+        mostrarDia();
+    },[selectedItemUC, selectedItemCurso, selectedItemTurma]);
+
+    useEffect(()=>{
+        const mostrarDiaSemana = () => {
+            if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
+                const columnData: any[] = horariosFile.map((row: any) => row[5]);
+                if (Array.isArray(columnData)) {
+                    const uniqueItems = Array.from(new Set(columnData));
+                    setUniqueItemsDiaSemana(uniqueItems);
+                    setSelectedItemDiaSemana(uniqueItems[0]); // Seleciona o primeiro item
+                }
+            }
+        }
+        mostrarDiaSemana();
+    },[selectedItemUC, selectedItemCurso, selectedItemTurma]);
     
-  
+    
+
+    ////////////////////////////////PAGINA HTML/////////////////////////////////
     if (!uploading) {
     return (
         <div>
@@ -168,18 +206,18 @@ export default function MarcarAula() {
     return(
         <div>
             <div>
-            <label htmlFor="selectedItemCurso">Selecione um curso:</label>
-            <select id="selectedItemCurso" value={selectedItemCurso} onChange={(e) => {setSelectedItemCurso(e.target.value); mostrarUC();}} >
-                {uniqueItemsCurso.map((item: string, index: number) => (
-                <option key={index} value={item}>{item}</option>
-                ))}
-            </select>
+                <label htmlFor="selectedItemCurso">Selecione um curso:</label>
+                <select id="selectedItemCurso" value={selectedItemCurso} onChange={(e) => {setSelectedItemCurso(e.target.value);}} >
+                    {uniqueItemsCurso.map((item: string, index: number) => (
+                    <option key={index} value={item}>{item}</option>
+                    ))}
+                </select>
             </div>
 
             <div>
                 <label htmlFor="selectedItemUC">Selecione uma UC:</label>
                 {selectedItemCurso!=="Curso"?(
-                    <select id="selectedItemUC" value={selectedItemUC} onChange={(e) =>{ setSelectedItemUC(e.target.value); mostrarTurmas();}}>
+                    <select id="selectedItemUC" value={selectedItemUC} onChange={(e) =>{ setSelectedItemUC(e.target.value);}}>
                     {uniqueItemsUC.map((item: string, index: number) => (
                         <option key={index} value={item}>{item}</option>
                     ))}
@@ -190,7 +228,7 @@ export default function MarcarAula() {
             </div>
 
             <div>
-            <label htmlFor="selectedItemTurma">Selecione as Turmas:</label>
+                <label htmlFor="selectedItemTurma">Selecione as Turmas:</label>
                 {selectedItemCurso!=="Curso" && selectedItemTurma!==null?(
                     <select id="selectedItemTurma" value={selectedItemTurma} onChange={(e) => setSelectedItemTurma(e.target.value)}>
                     {uniqueItemsTurma.map((item: string, index: number) => (
@@ -200,9 +238,59 @@ export default function MarcarAula() {
                 ):(
                     <div></div>
                 )}
+
             </div>
 
+            <div>
+                <label htmlFor="selectedItemHoraInicio">Hora Inicio:</label>
+                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                    <select id="selectedItemHoraInicio" value={selectedItemHoraInicio} onChange={(e) => setSelectedItemHoraInicio(e.target.value)}>
+                    <option value="Hora Inicio">Hora Inicio</option>
+                    {horas.map((item: string, index: number) => (
+                        <option key={index} value={item}>{item}</option>
+                    ))}
+                    </select>
+                ):(
+                    <div></div>
+                )}
+            </div>
+            
+            <div>
+                <label htmlFor="selectedItemHoraFim">Hora Fim:</label>
+                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                    <select id="selectedItemHoraFim" value={selectedItemHoraFim} onChange={(e) => setSelectedItemHoraFim(e.target.value)}>
+                    <option value="Hora Fim">Hora Fim</option>
+                    {horas.map((item: string, index: number) => (
+                        <option key={index} value={item}>{item}</option>
+                    ))}
+                    </select>
+                ):(
+                    <div></div>
+                )}
+                <br />
+                <label htmlFor='selectedItemDia'>Dia:</label>
+                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                    <select id="selectedItemDia" value={selectedItemDia} onChange={(e) => setSelectedItemDia(e.target.value)}>
+                        {uniqueItemsDia.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
+                    </select>
+                ):(
+                    <div></div>
+                )}
+                <br />
+                <label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label>
+                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                    <select id="selectedItemDiaSemana" value={selectedItemDiaSemana} onChange={(e) => setSelectedItemDiaSemana(e.target.value)}>
+                        {uniqueItemsDiaSemana.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
+                    </select>
+                ):(
+                    <div></div>
+                )}
+            </div>
         </div>
-        )
+    )
     
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { exportExcel, exportJson } from "../export";
+import { exportExcel, exportJson } from "../js/export";
 import ExportIcon from "../content/imgs/icons/download.png";
 import { useNavigate, useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
