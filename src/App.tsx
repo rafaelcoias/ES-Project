@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import FilePage from "./pages/FilePage";
 import NotFoundPage from "./pages/NotFound";
+import MarcarAula from "./pages/MarcarAula";
 
 // Este é o ficheiro principal onde vai estar a App toda,
 // É usado reac-router-dom para criar rotas
@@ -28,6 +29,7 @@ function App() {
         <Routes>
           <Route index element={<Home />} />
           <Route path="/file/:name" element={<FilePage />} />
+          <Route path="/MarcarAula" element={<MarcarAula />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
