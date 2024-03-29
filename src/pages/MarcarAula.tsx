@@ -37,6 +37,18 @@ export default function MarcarAula() {
     //escolha dia da semana
     const [uniqueItemsDiaSemana, setUniqueItemsDiaSemana] = useState<any>([]);
     const [selectedItemDiaSemana, setSelectedItemDiaSemana] = useState<any>(null);
+    // escolha dia do mes ou dia da semnana
+    const [selectedDataAula,setSelectedDataAula] = useState<any>(null);
+
+    //escolha capcidade
+    const [uniqueItemsCapacidade, setUniqueItemsCapacidade] = useState<any>([]);
+    const [selectedItemCapacidade, setSelectedItemCapacidade] = useState<any>(null);
+
+    //escolha sala
+    const [uniqueItemsSala, setUniqueItemsSala] = useState<any>([]);
+    const [selectedItemSala, setSelectedItemSala] = useState<any>(null);
+    //escolha capacidade/sala
+    const [selectedCap_Sala, setSelectedCap_Sala] = useState<any>(null);
 
     // Função para lidar com a mudança de arquivo de horários
     const handleHorariosFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,8 +186,38 @@ export default function MarcarAula() {
         }
         mostrarDiaSemana();
     },[selectedItemUC, selectedItemCurso, selectedItemTurma]);
+
+    useEffect(()=>{
+        const mostrarSala = () => {
+            if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
+                const headerRow = salaFile[0]; // Linha do cabeçalho
+                const columnData: any[] = salaFile.slice(1).map((row: any) => {
+                    let salaWithName: string = row[1]; // Nome inicial da sala
+                    for (let i = 1; i < row.length; i++) {
+                        if (row[i] === 'X') {
+                            salaWithName += ';' + headerRow[i]; // Adiciona o nome da coluna se houver 'X'
+                        }
+                    }
+                    return salaWithName;
+                });
+                if (Array.isArray(columnData)) {
+                    const uniqueItems = Array.from(new Set(columnData));
+                    setUniqueItemsSala(uniqueItems);
+                    setSelectedItemSala(uniqueItems[0]); // Seleciona o primeiro item
+                }
+            }
+        };
+        mostrarSala();
+    },[horariosFile, salaFile]);
     
     
+
+
+    const handleVerPossibilidades=()=>{
+
+    }
+
+
 
     ////////////////////////////////PAGINA HTML/////////////////////////////////
     if (!uploading) {
@@ -268,28 +310,55 @@ export default function MarcarAula() {
                     <div></div>
                 )}
                 <br />
-                <label htmlFor='selectedItemDia'>Dia:</label>
-                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
-                    <select id="selectedItemDia" value={selectedItemDia} onChange={(e) => setSelectedItemDia(e.target.value)}>
+            </div>
+
+            <div>
+                <label htmlFor="optionData">Escolha uma opção de data:</label>
+                <select id="optionData" value={selectedDataAula} onChange={(e)=>setSelectedDataAula(e.target.value)}>
+                    <option value="diaSemana">Dia da Semana</option>
+                    <option value="diaAno">Data da aula</option>
+                </select>
+                <br />
+                {selectedDataAula==="diaAno"?(
+                    <><label htmlFor='selectedItemDia'>Data da aula:</label><select id="selectedItemDia" value={selectedItemDia} onChange={(e) => setSelectedItemDia(e.target.value)}>
                         {uniqueItemsDia.map((item: string, index: number) => (
                             <option key={index} value={item}>{item}</option>
                         ))}
-                    </select>
-                ):(
-                    <div></div>
-                )}
-                <br />
-                <label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label>
-                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
-                    <select id="selectedItemDiaSemana" value={selectedItemDiaSemana} onChange={(e) => setSelectedItemDiaSemana(e.target.value)}>
-                        {uniqueItemsDiaSemana.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select>
-                ):(
-                    <div></div>
+                    </select></>
+                ):
+                (
+                    <><label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label><select id="selectedItemDiaSemana" value={selectedItemDiaSemana} onChange={(e) => setSelectedItemDiaSemana(e.target.value)}>
+                            {uniqueItemsDiaSemana.map((item: string, index: number) => (
+                                <option key={index} value={item}>{item}</option>
+                            ))}
+                        </select></>
                 )}
             </div>
+            
+            <div>
+                <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
+                <select id="optionCap_Sala" value={selectedCap_Sala} onChange={(e)=>setSelectedCap_Sala(e.target.value)}>
+                    <option value="tipoSala">Tipo de Sala</option>
+                    <option value="capacidade">Capacidade</option>
+                </select>
+                <br />
+                {selectedCap_Sala==="capacidade"?(
+                    <><label htmlFor='selectedItemCapacidade'>Capacidade:</label><input
+                        type="number"
+                        id="selectedItemCapacidade"
+                        value={selectedItemCapacidade}
+                        onChange={(e) => setSelectedItemCapacidade(e.target.value)} /></>
+                ):
+                (
+                    <><label htmlFor='selectedItemSala'>Tipo de Sala:</label><select id="selectedItemSala" value={selectedItemSala} onChange={(e) => setSelectedItemSala(e.target.value)}>
+                            {uniqueItemsSala.map((item: string, index: number) => (
+                                <option key={index} value={item}>{item}</option>
+                            ))}
+                        </select></>
+                )}
+            </div>
+
+            <button onClick={handleVerPossibilidades}>Ver Possibilidades</button>
         </div>
     )
     
