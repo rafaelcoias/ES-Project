@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from "xlsx";
-import {gerarHorasPossiveis} from "../js/auxilioEscolhaAula";
-import { useNavigate} from "react-router-dom";
+import { gerarHorasPossiveis } from "../js/auxilioEscolhaAula";
+import { useNavigate } from "react-router-dom";
 
 export default function MarcarAula() {
     const navigate = useNavigate();
@@ -27,9 +27,9 @@ export default function MarcarAula() {
     //escolha da Turma
     const [uniqueItemsTurma, setUniqueItemsTurma] = useState<any>([]);
     const [selectedItemTurma, setSelectedItemTurma] = useState<any>(null);
-    
+
     //escolha hora inicio e fim
-    const horas=gerarHorasPossiveis();
+    const horas = gerarHorasPossiveis();
     const [selectedItemHoraInicio, setSelectedItemHoraInicio] = useState<any>(null);
     const [selectedItemHoraFim, setSelectedItemHoraFim] = useState<any>(null);
 
@@ -41,7 +41,7 @@ export default function MarcarAula() {
     const [uniqueItemsDiaSemana, setUniqueItemsDiaSemana] = useState<any>([]);
     const [selectedItemDiaSemana, setSelectedItemDiaSemana] = useState<any>(null);
     // escolha dia do mes ou dia da semnana
-    const [selectedDataAula,setSelectedDataAula] = useState<any>(null);
+    const [selectedDataAula, setSelectedDataAula] = useState<any>(null);
 
     //escolha capcidade
     const [selectedItemCapacidade, setSelectedItemCapacidade] = useState<any>(null);
@@ -71,7 +71,7 @@ export default function MarcarAula() {
             alert("Por favor escolha um ficheiro com formato excel.");
         }
     };
-  
+
     // Função para lidar com a mudança de arquivo de sala
     const handleSalaFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
@@ -105,10 +105,10 @@ export default function MarcarAula() {
         };
         reader.readAsArrayBuffer(file);
     };
-    
 
-    const handleContinuar=() =>{
-        if(horariosFile && salaFile){
+
+    const handleContinuar = () => {
+        if (horariosFile && salaFile) {
             setUploading(true);
             const columnData: any[] = horariosFile.flatMap((row: any) => {
                 // Faz o split por vírgula em cada string dentro de row[0]
@@ -121,7 +121,7 @@ export default function MarcarAula() {
             } else {
                 alert("Erro ao processar os dados do arquivo de horários.");
             }
-        }else{
+        } else {
             alert("Por favor preencha todos os campos");
         }
     }
@@ -138,7 +138,7 @@ export default function MarcarAula() {
                 } else {
                     alert("Erro ao processar os dados do arquivo de horários.");
                 }
-            } 
+            }
         };
 
         mostrarUC();
@@ -146,11 +146,11 @@ export default function MarcarAula() {
 
 
 
-    useEffect(()=>{
+    useEffect(() => {
         const mostrarTurmas = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
-                const filteredDataUC: any[] = horariosFile.filter((row: any) =>row[1].includes(selectedItemUC) );
-                const filteredDataCurso: any[] = filteredDataUC.filter((row: any) =>  row[0].includes(selectedItemCurso));
+                const filteredDataUC: any[] = horariosFile.filter((row: any) => row[1].includes(selectedItemUC));
+                const filteredDataCurso: any[] = filteredDataUC.filter((row: any) => row[0].includes(selectedItemCurso));
                 const columnData: any[] = filteredDataCurso.map((row: any) => row[3]);
                 if (Array.isArray(columnData)) {
                     const uniqueItems = Array.from(new Set(columnData));
@@ -162,9 +162,9 @@ export default function MarcarAula() {
             }
         };
         mostrarTurmas();
-    },[selectedItemUC]);
-    
-    useEffect(()=>{
+    }, [selectedItemUC]);
+
+    useEffect(() => {
         const mostrarDia = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
                 const columnData: any[] = horariosFile.map((row: any) => row[8]);
@@ -176,9 +176,9 @@ export default function MarcarAula() {
             }
         }
         mostrarDia();
-    },[selectedItemUC, selectedItemCurso, selectedItemTurma]);
+    }, [selectedItemUC, selectedItemCurso, selectedItemTurma]);
 
-    useEffect(()=>{
+    useEffect(() => {
         const mostrarDiaSemana = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
                 const columnData: any[] = horariosFile.map((row: any) => row[5]);
@@ -190,9 +190,9 @@ export default function MarcarAula() {
             }
         }
         mostrarDiaSemana();
-    },[selectedItemUC, selectedItemCurso, selectedItemTurma]);
+    }, [selectedItemUC, selectedItemCurso, selectedItemTurma]);
 
-    useEffect(()=>{
+    useEffect(() => {
         const mostrarSala = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
                 const headerRow = salaFile[0]; // Linha do cabeçalho
@@ -213,90 +213,101 @@ export default function MarcarAula() {
             }
         };
         mostrarSala();
-    },[selectedItemTurma]);
-    
-    
+    }, [selectedItemTurma]);
+
+
 
     useEffect(() => {
-        const handleVerPossibilidades=()=>{
+        const handleVerPossibilidades = () => {
             //HEHE AGORA FODEU
-            if(verPossibilidades){
+            if (verPossibilidades) {
 
-                if(selectedItemHoraInicio==="Hora Inicio" || selectedItemHoraFim==="Hora Fim"){
+                if (selectedItemHoraInicio === "Hora Inicio" || selectedItemHoraFim === "Hora Fim") {
                     alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
                 }
             }
         }
         handleVerPossibilidades();
-    },[verPossibilidades]);
+    }, [verPossibilidades]);
 
 
 
     ////////////////////////////////PAGINA HTML/////////////////////////////////
-    if (!uploading) {
-    return (
-        <div>
-            <div>
-                <button onClick={() => navigate(-1)}>
-                    ⬅ VOLTAR
-                </button>
-            </div>
-            <div>
-                <label htmlFor="horarios">Upload de Horários:</label>
-                {!horariosFile ? (
-                    <input type="file" id="horarios" accept=".csv,.xlsx" onChange={handleHorariosFileChange} />
-                ) : (
-                    <div>{horariosFileName}</div>
-                )}
 
-            </div>
+
+    if (!uploading) {
+        return (
             <div>
-                <label htmlFor="sala">Upload de Sala:</label>
-                {!salaFile ? (
-                    <input type="file" id="sala" accept=".csv,.xlsx" onChange={handleSalaFileChange} />
-                ) : (
-                    <div>{salasFileName}</div>
-                )}
+                <div>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-8 left-[4vw] font-mybold text-black"
+                    >  ⬅ VOLTAR
+                    </button>
+                </div>
+                <div>
+                    <label htmlFor="horarios">Upload de Horários:</label>
+                    {!horariosFile ? (
+                        <input type="file" id="horarios" accept=".csv,.xlsx" onChange={handleHorariosFileChange} />
+                    ) : (
+                        <div>{horariosFileName}</div>
+                    )}
+
+                </div>
+                <div>
+                    <label htmlFor="sala">Upload de Sala:</label>
+                    {!salaFile ? (
+                        <input type="file" id="sala" accept=".csv,.xlsx" onChange={handleSalaFileChange} />
+                    ) : (
+                        <div>{salasFileName}</div>
+                    )}
+                </div>
+                <button onClick={handleContinuar}>Continuar</button>
             </div>
-            <button onClick={handleContinuar}>Continuar</button>
-        </div>
-    );
+        );
     }
 
 
-    return(
+    return (
         <div>
             <div>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="absolute top-8 left-[4vw] font-mybold text-black"
+                >  ⬅ VOLTAR
+                </button>
+            </div>
+            <div>
                 <label htmlFor="selectedItemCurso">Selecione um curso:</label>
-                <select id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => {setSelectedItemCurso(e.target.value);}} >
+                <select id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
                     {uniqueItemsCurso.map((item: string, index: number) => (
-                    <option key={index} value={item}>{item}</option>
+                        <option key={index} value={item}>{item}</option>
                     ))}
                 </select>
             </div>
 
             <div>
                 <label htmlFor="selectedItemUC">Selecione uma UC:</label>
-                {selectedItemCurso!=="Curso"?(
-                    <select id="selectedItemUC" value={selectedItemUC || ''} onChange={(e) =>{ setSelectedItemUC(e.target.value);}}>
-                    {uniqueItemsUC.map((item: string, index: number) => (
-                        <option key={index} value={item}>{item}</option>
-                    ))}
+                {selectedItemCurso !== "Curso" ? (
+                    <select id="selectedItemUC" value={selectedItemUC || ''} onChange={(e) => { setSelectedItemUC(e.target.value); }}>
+                        {uniqueItemsUC.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
                     </select>
-                ):(
+                ) : (
                     <div></div>
                 )}
             </div>
 
             <div>
                 <label htmlFor="selectedItemTurma">Selecione as Turmas:</label>
-                {selectedItemCurso!=="Curso" && selectedItemTurma!==null?(
+                {selectedItemCurso !== "Curso" && selectedItemTurma !== null ? (
                     <select id="selectedItemTurma" value={selectedItemTurma || ''} onChange={(e) => setSelectedItemTurma(e.target.value)}>
-                    {uniqueItemsTurma.map((item: string, index: number) => (
-                        <option key={index} value={item}>{item}</option>
-                    ))}
+                        {uniqueItemsTurma.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
                     </select>
-                ):(
+                ) : (
                     <div></div>
                 )}
 
@@ -304,28 +315,28 @@ export default function MarcarAula() {
 
             <div>
                 <label htmlFor="selectedItemHoraInicio">Hora Inicio:</label>
-                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
                     <select id="selectedItemHoraInicio" value={selectedItemHoraInicio || ''} onChange={(e) => setSelectedItemHoraInicio(e.target.value)}>
-                    <option value="Hora Inicio">Hora Inicio</option>
-                    {horas.map((item: string, index: number) => (
-                        <option key={index} value={item}>{item}</option>
-                    ))}
+                        <option value="Hora Inicio">Hora Inicio</option>
+                        {horas.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
                     </select>
-                ):(
+                ) : (
                     <div></div>
                 )}
             </div>
-            
+
             <div>
                 <label htmlFor="selectedItemHoraFim">Hora Fim:</label>
-                {selectedItemCurso!=="Curso" && selectedItemTurma!==null && selectedItemTurma!==null?(
+                {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
                     <select id="selectedItemHoraFim" value={selectedItemHoraFim || ''} onChange={(e) => setSelectedItemHoraFim(e.target.value)}>
-                    <option value="Hora Fim">Hora Fim</option>
-                    {horas.map((item: string, index: number) => (
-                        <option key={index} value={item}>{item}</option>
-                    ))}
+                        <option value="Hora Fim">Hora Fim</option>
+                        {horas.map((item: string, index: number) => (
+                            <option key={index} value={item}>{item}</option>
+                        ))}
                     </select>
-                ):(
+                ) : (
                     <div></div>
                 )}
                 <br />
@@ -333,53 +344,53 @@ export default function MarcarAula() {
 
             <div>
                 <label htmlFor="optionData">Escolha uma opção de data:</label>
-                <select id="optionData" value={selectedDataAula || ''} onChange={(e)=>setSelectedDataAula(e.target.value)}>
+                <select id="optionData" value={selectedDataAula || ''} onChange={(e) => setSelectedDataAula(e.target.value)}>
                     <option value="diaSemana">Dia da Semana</option>
                     <option value="diaAno">Data da aula</option>
                 </select>
                 <br />
-                {selectedDataAula==="diaAno"?(
-                    <><label htmlFor='selectedItemDia'>Data da aula:</label><select id="selectedItemDia" value={selectedItemDia || ''} onChange={(e) => {setSelectedItemDia(e.target.value);setSelectedItemDiaSemana(uniqueItemsDiaSemana[0])}}>
+                {selectedDataAula === "diaAno" ? (
+                    <><label htmlFor='selectedItemDia'>Data da aula:</label><select id="selectedItemDia" value={selectedItemDia || ''} onChange={(e) => { setSelectedItemDia(e.target.value); setSelectedItemDiaSemana(uniqueItemsDiaSemana[0]) }}>
                         {uniqueItemsDia.map((item: string, index: number) => (
                             <option key={index} value={item}>{item}</option>
                         ))}
                     </select></>
-                ):
-                (
-                    <><label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label><select id="selectedItemDiaSemana" value={selectedItemDiaSemana || ''} onChange={(e) => {setSelectedItemDiaSemana(e.target.value);setSelectedItemDia(uniqueItemsDia[0])}}>
+                ) :
+                    (
+                        <><label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label><select id="selectedItemDiaSemana" value={selectedItemDiaSemana || ''} onChange={(e) => { setSelectedItemDiaSemana(e.target.value); setSelectedItemDia(uniqueItemsDia[0]) }}>
                             {uniqueItemsDiaSemana.map((item: string, index: number) => (
                                 <option key={index} value={item}>{item}</option>
                             ))}
                         </select></>
-                )}
+                    )}
             </div>
-            
+
             <div>
                 <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
-                <select id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e)=>setSelectedCap_Sala(e.target.value)}>
+                <select id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
                     <option value="espaco">Espaço</option>
                     <option value="capacidade">Capacidade</option>
                 </select>
                 <br />
-                {selectedCap_Sala==="capacidade"?(
+                {selectedCap_Sala === "capacidade" ? (
                     <><label htmlFor='selectedItemCapacidade'>Capacidade:</label><input
                         type="number"
                         id="selectedItemCapacidade"
                         value={selectedItemCapacidade || ''}
-                        onChange={(e) => {setSelectedItemCapacidade(e.target.value);setSelectedItemSala("Tipo de Sala")}} /></>
-                ):
-                (
-                    <><label htmlFor='selectedItemSala'>Espaco:</label><select id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => {setSelectedItemSala(e.target.value);setSelectedItemCapacidade('')}}>
+                        onChange={(e) => { setSelectedItemCapacidade(e.target.value); setSelectedItemSala("Tipo de Sala") }} /></>
+                ) :
+                    (
+                        <><label htmlFor='selectedItemSala'>Espaco:</label><select id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade('') }}>
                             <option value="Tipo de Sala">Tipo de Sala</option>
                             {uniqueItemsSala.map((item: string, index: number) => (
                                 <option key={index} value={item}>{item}</option>
                             ))}
                         </select></>
-                )}
+                    )}
             </div>
 
-            <button onClick={()=> setVerPossibilidades(true)}>Ver Possibilidades</button>
+            <button onClick={() => setVerPossibilidades(true)}>Ver Possibilidades</button>
         </div>
     )
-    
+
 };
