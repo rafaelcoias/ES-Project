@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from "xlsx";
-import { gerarHorasPossiveis } from "../js/auxilioEscolhaAula";
+import { gerarHorasPossiveis, isHoraMaisRecente } from "../js/auxilioEscolhaAula";
 import { useNavigate } from "react-router-dom";
 
 export default function MarcarAula() {
@@ -219,16 +219,55 @@ export default function MarcarAula() {
 
     useEffect(() => {
         const handleVerPossibilidades = () => {
-            //HEHE AGORA FODEU
-            if (verPossibilidades) {
 
-                if (selectedItemHoraInicio === "Hora Inicio" || selectedItemHoraFim === "Hora Fim") {
-                    alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
-                }
+            if (!selectedItemHoraInicio || !selectedItemHoraFim) {
+                alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
+                return; // Sai da função se algum dos campos estiver vazio
             }
-        }
+
+            // Verifica se as horas foram preenchidas corretamente antes de usar a função isHoraMaisRecente
+            const horaInicio = selectedItemHoraInicio === "Hora Inicio" ? null : selectedItemHoraInicio;
+            const horaFim = selectedItemHoraFim === "Hora Fim" ? null : selectedItemHoraFim;
+
+            if (!horaInicio || !horaFim) {
+                alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
+                return; // Sai da função se algum dos campos estiver com valor incorreto
+            }
+
+            if (!isHoraMaisRecente(horaFim, horaInicio)) {
+                alert("A 'Hora Inicio' tem que ser mais antiga que a 'Hora Fim'!");
+            }
+
+            const diaSemana = selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
+            if (selectedDataAula === 'diaSemana') {
+                if (diaSemana === 'Dia da semana')
+                    alert("Escolha um dia da semana!");
+            }
+            const diaAno = selectedDataAula === 'diaAno' ? selectedItemDia : null;
+            if (selectedDataAula === 'diaAno') {
+                if (diaAno === 'Data da aula')
+                    alert("Escolha um dia da ano!");
+            }
+
+            console.log(selectedCap_Sala);
+            const espaco = selectedCap_Sala === 'espaco' ? selectedItemSala : null;
+            console.log(espaco);
+            if (selectedCap_Sala === 'espaco') {
+                if (espaco === "Tipo de Sala")
+                    alert("Escolha o Tipo de sala!");
+            }
+
+            const capacidade = selectedCap_Sala === 'capacidade' ? selectedItemCapacidade : null;
+            console.log(capacidade);
+            if (selectedCap_Sala === 'capacidade') {
+                if (capacidade === 0)
+                    alert("A capacidade tem de ser maior que 0");
+            }
+        };
+
         handleVerPossibilidades();
     }, [verPossibilidades]);
+
 
 
 
@@ -376,11 +415,12 @@ export default function MarcarAula() {
                     <><label htmlFor='selectedItemCapacidade'>Capacidade:</label><input
                         type="number"
                         id="selectedItemCapacidade"
-                        value={selectedItemCapacidade || ''}
+                        value={selectedItemCapacidade || 0}
+                        min = '0'
                         onChange={(e) => { setSelectedItemCapacidade(e.target.value); setSelectedItemSala("Tipo de Sala") }} /></>
                 ) :
                     (
-                        <><label htmlFor='selectedItemSala'>Espaco:</label><select id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade('') }}>
+                        <><label htmlFor='selectedItemSala'>Espaco:</label><select id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade(0) }}>
                             <option value="Tipo de Sala">Tipo de Sala</option>
                             {uniqueItemsSala.map((item: string, index: number) => (
                                 <option key={index} value={item}>{item}</option>
@@ -389,7 +429,7 @@ export default function MarcarAula() {
                     )}
             </div>
 
-            <button onClick={() => setVerPossibilidades(true)}>Ver Possibilidades</button>
+            <button onClick={() => setVerPossibilidades(!verPossibilidades)}>Ver Possibilidades</button>
         </div>
     )
 
