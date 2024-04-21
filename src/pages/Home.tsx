@@ -113,10 +113,10 @@ export default function Home() {
       <h1 className="text-[1.5rem] quatro:text-[2rem] font-bold">
         Bem-vindo de volta!
       </h1>
-      <button 
-        onClick={()=> navigate("/MarcarAula")}
+      <button
+        onClick={() => navigate("/MarcarAula")}
         className="px-4 py-2 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
-          Marcar Aula de Substituição
+        Marcar Aula de Substituição
       </button>
       <p className="text-black">Ficheiros:</p>
       <div className="grid grid-cols-1 gap-4 oito:grid-cols-2">

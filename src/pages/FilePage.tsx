@@ -56,7 +56,7 @@ export default function FilePage() {
           const workbook = XLSX.read(data, { type: "array" });
           const worksheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[worksheetName];
-          let jsonData = XLSX.utils.sheet_to_json(worksheet,{
+          let jsonData = XLSX.utils.sheet_to_json(worksheet, {
             header: 0,
             defval: ""
           });
@@ -66,9 +66,9 @@ export default function FilePage() {
             // console.log(row)
             Object.keys(row).forEach((key) => {
               // console.log(key,row)
-              if(!key.includes("SEP="))
+              if (!key.includes("SEP="))
                 trimmedRow[key] = row[key] || "";
-        
+
             });
             return trimmedRow;
           });

@@ -20,7 +20,7 @@ export default function EditExcel() {
           </tr>
         </thead>
         <tbody>
-          {tableData.map((row:number, rowIndex:number) => (
+          {tableData.map((row: number, rowIndex: number) => (
             <tr key={rowIndex}>
               {Object.values(row).map((cell, cellIndex) => (
                 <td key={cellIndex}>{cell}</td>

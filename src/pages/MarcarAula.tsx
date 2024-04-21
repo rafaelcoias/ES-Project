@@ -237,32 +237,42 @@ export default function MarcarAula() {
 
     if (!uploading) {
         return (
-            <div>
-                <div>
+            <div className="flex flex-col items-center justify-center">
+                <div className="absolute top-8 left-[4vw] font-mybold text-black">
                     <button
                         onClick={() => navigate(-1)}
                         className="absolute top-8 left-[4vw] font-mybold text-black"
-                    >  ⬅ VOLTAR
+                    >  ⬅VOLTAR
                     </button>
                 </div>
-                <div>
-                    <label htmlFor="horarios">Upload de Horários:</label>
-                    {!horariosFile ? (
-                        <input type="file" id="horarios" accept=".csv,.xlsx" onChange={handleHorariosFileChange} />
-                    ) : (
-                        <div>{horariosFileName}</div>
-                    )}
 
+                <div className="mt-[300px] flex justify-center items-center flex-col">
+                    <div className="flex gap-4">
+                        <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
+                            <p className="text-center text-lg font-bold">
+                                <span className="text-black">+</span> Upload de Horários
+                            </p>
+                            {!horariosFile ? (
+                                <input type="file" id="horarios" accept=".csv,.xlsx" onChange={handleHorariosFileChange} className="text-lg" />
+                            ) : (
+                                <div>{horariosFileName}</div>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
+                            <p className="text-center text-lg font-bold">
+                                <span className="text-black">+</span> Upload de Sala
+                            </p>
+                            {!salaFile ? (
+                                <input type="file" id="sala" accept=".csv,.xlsx" onChange={handleSalaFileChange} className="text-lg" />
+                            ) : (
+                                <div>{salasFileName}</div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label htmlFor="sala">Upload de Sala:</label>
-                    {!salaFile ? (
-                        <input type="file" id="sala" accept=".csv,.xlsx" onChange={handleSalaFileChange} />
-                    ) : (
-                        <div>{salasFileName}</div>
-                    )}
-                </div>
-                <button onClick={handleContinuar}>Continuar</button>
+
+                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300" onClick={handleContinuar}>Continuar</button>
             </div>
         );
     }
