@@ -218,56 +218,57 @@ export default function MarcarAula() {
 
 
     useEffect(() => {
-        const handleVerPossibilidades = () => {
+        if (verPossibilidades) {
+            const handleVerPossibilidades = () => {
 
-            if (!selectedItemHoraInicio || !selectedItemHoraFim) {
-                alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
-                return; // Sai da função se algum dos campos estiver vazio
-            }
+                if (!selectedItemHoraInicio || !selectedItemHoraFim) {
+                    alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
+                    return; // Sai da função se algum dos campos estiver vazio
+                }
 
-            // Verifica se as horas foram preenchidas corretamente antes de usar a função isHoraMaisRecente
-            const horaInicio = selectedItemHoraInicio === "Hora Inicio" ? null : selectedItemHoraInicio;
-            const horaFim = selectedItemHoraFim === "Hora Fim" ? null : selectedItemHoraFim;
+                // Verifica se as horas foram preenchidas corretamente antes de usar a função isHoraMaisRecente
+                const horaInicio = selectedItemHoraInicio === "Hora Inicio" ? null : selectedItemHoraInicio;
+                const horaFim = selectedItemHoraFim === "Hora Fim" ? null : selectedItemHoraFim;
 
-            if (!horaInicio || !horaFim) {
-                alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
-                return; // Sai da função se algum dos campos estiver com valor incorreto
-            }
+                if (!horaInicio || !horaFim) {
+                    alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
+                    return; // Sai da função se algum dos campos estiver com valor incorreto
+                }
 
-            if (!isHoraMaisRecente(horaFim, horaInicio)) {
-                alert("A 'Hora Inicio' tem que ser mais antiga que a 'Hora Fim'!");
-            }
+                if (!isHoraMaisRecente(horaFim, horaInicio)) {
+                    alert("A 'Hora Inicio' tem que ser mais antiga que a 'Hora Fim'!");
+                }
 
-            const diaSemana = selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
-            if (selectedDataAula === 'diaSemana') {
-                if (diaSemana === 'Dia da semana')
-                    alert("Escolha um dia da semana!");
-            }
-            const diaAno = selectedDataAula === 'diaAno' ? selectedItemDia : null;
-            if (selectedDataAula === 'diaAno') {
-                if (diaAno === 'Data da aula')
-                    alert("Escolha um dia da ano!");
-            }
+                const diaSemana = selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
+                if (selectedDataAula === 'diaSemana') {
+                    if (diaSemana === 'Dia da semana')
+                        alert("Escolha um dia da semana!");
+                }
+                const diaAno = selectedDataAula === 'diaAno' ? selectedItemDia : null;
+                if (selectedDataAula === 'diaAno') {
+                    if (diaAno === 'Data da aula')
+                        alert("Escolha um dia da ano!");
+                }
 
-            console.log(selectedCap_Sala);
-            const espaco = selectedCap_Sala === 'espaco' ? selectedItemSala : null;
-            console.log(espaco);
-            if (selectedCap_Sala === 'espaco') {
-                if (espaco === "Tipo de Sala")
-                    alert("Escolha o Tipo de sala!");
-            }
+                console.log(selectedCap_Sala);
+                const espaco = selectedCap_Sala === 'espaco' ? selectedItemSala : null;
+                console.log(espaco);
+                if (selectedCap_Sala === 'espaco') {
+                    if (espaco === "Tipo de Sala")
+                        alert("Escolha o Tipo de sala!");
+                }
 
-            const capacidade = selectedCap_Sala === 'capacidade' ? selectedItemCapacidade : null;
-            console.log(capacidade);
-            if (selectedCap_Sala === 'capacidade') {
-                if (capacidade === 0)
-                    alert("A capacidade tem de ser maior que 0");
-            }
-        };
+                const capacidade = selectedCap_Sala === 'capacidade' ? selectedItemCapacidade : null;
+                console.log(capacidade);
+                if (selectedCap_Sala === 'capacidade') {
+                    if (capacidade === 0)
+                        alert("A capacidade tem de ser maior que 0");
+                }
+            };
 
-        handleVerPossibilidades();
+            handleVerPossibilidades();
+        }
     }, [verPossibilidades]);
-
 
 
 
@@ -294,7 +295,10 @@ export default function MarcarAula() {
                             {!horariosFile ? (
                                 <input type="file" id="horarios" accept=".csv,.xlsx" onChange={handleHorariosFileChange} className="text-lg" />
                             ) : (
-                                <div>{horariosFileName}</div>
+                                <div className="flex items-center">
+                                    <div>{horariosFileName}</div>
+                                    <button onClick={() => setHorariosFile(null)} className="ml-5 px-2 py-1 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">↺</button>
+                                </div>
                             )}
                         </div>
 
@@ -305,11 +309,15 @@ export default function MarcarAula() {
                             {!salaFile ? (
                                 <input type="file" id="sala" accept=".csv,.xlsx" onChange={handleSalaFileChange} className="text-lg" />
                             ) : (
-                                <div>{salasFileName}</div>
+                                <div className="flex items-center">
+                                    <div>{salasFileName}</div>
+                                    <button onClick={() => setSalaFile(null)} className="ml-5 px-2 py-1 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">↺</button>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
+
 
                 <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300" onClick={handleContinuar}>Continuar</button>
             </div>
@@ -318,128 +326,158 @@ export default function MarcarAula() {
 
 
     return (
-        <div>
-            <div>
+        <div className="flex flex-col items-center justify-center h-screen">
+            <div className="absolute top-8 left-4 font-mybold text-black">
                 <button
                     onClick={() => navigate(-1)}
                     className="absolute top-8 left-[4vw] font-mybold text-black"
-                >  ⬅ VOLTAR
+                >  ⬅VOLTAR
                 </button>
             </div>
-            <div>
-                <label htmlFor="selectedItemCurso">Selecione um curso:</label>
-                <select id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
-                    {uniqueItemsCurso.map((item: string, index: number) => (
-                        <option key={index} value={item}>{item}</option>
-                    ))}
-                </select>
-            </div>
 
-            <div>
-                <label htmlFor="selectedItemUC">Selecione uma UC:</label>
-                {selectedItemCurso !== "Curso" ? (
-                    <select id="selectedItemUC" value={selectedItemUC || ''} onChange={(e) => { setSelectedItemUC(e.target.value); }}>
-                        {uniqueItemsUC.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select>
-                ) : (
-                    <div></div>
-                )}
-            </div>
-
-            <div>
-                <label htmlFor="selectedItemTurma">Selecione as Turmas:</label>
-                {selectedItemCurso !== "Curso" && selectedItemTurma !== null ? (
-                    <select id="selectedItemTurma" value={selectedItemTurma || ''} onChange={(e) => setSelectedItemTurma(e.target.value)}>
-                        {uniqueItemsTurma.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select>
-                ) : (
-                    <div></div>
-                )}
-
-            </div>
-
-            <div>
-                <label htmlFor="selectedItemHoraInicio">Hora Inicio:</label>
-                {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
-                    <select id="selectedItemHoraInicio" value={selectedItemHoraInicio || ''} onChange={(e) => setSelectedItemHoraInicio(e.target.value)}>
-                        <option value="Hora Inicio">Hora Inicio</option>
-                        {horas.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select>
-                ) : (
-                    <div></div>
-                )}
-            </div>
-
-            <div>
-                <label htmlFor="selectedItemHoraFim">Hora Fim:</label>
-                {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
-                    <select id="selectedItemHoraFim" value={selectedItemHoraFim || ''} onChange={(e) => setSelectedItemHoraFim(e.target.value)}>
-                        <option value="Hora Fim">Hora Fim</option>
-                        {horas.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select>
-                ) : (
-                    <div></div>
-                )}
-                <br />
-            </div>
-
-            <div>
-                <label htmlFor="optionData">Escolha uma opção de data:</label>
-                <select id="optionData" value={selectedDataAula || ''} onChange={(e) => setSelectedDataAula(e.target.value)}>
-                    <option value="diaSemana">Dia da Semana</option>
-                    <option value="diaAno">Data da aula</option>
-                </select>
-                <br />
-                {selectedDataAula === "diaAno" ? (
-                    <><label htmlFor='selectedItemDia'>Data da aula:</label><select id="selectedItemDia" value={selectedItemDia || ''} onChange={(e) => { setSelectedItemDia(e.target.value); setSelectedItemDiaSemana(uniqueItemsDiaSemana[0]) }}>
-                        {uniqueItemsDia.map((item: string, index: number) => (
-                            <option key={index} value={item}>{item}</option>
-                        ))}
-                    </select></>
-                ) :
-                    (
-                        <><label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label><select id="selectedItemDiaSemana" value={selectedItemDiaSemana || ''} onChange={(e) => { setSelectedItemDiaSemana(e.target.value); setSelectedItemDia(uniqueItemsDia[0]) }}>
-                            {uniqueItemsDiaSemana.map((item: string, index: number) => (
+            <div className="flex flex-col items-center justify-center h-screen">
+                <div className="w-[800px] border-2 border-black p-8 rounded-3xl">
+                    <div className="mb-4 flex justify-between">
+                        <label htmlFor="selectedItemCurso" >Selecione um curso:</label>
+                        <select className="w-[320px] select-text" id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
+                            {uniqueItemsCurso.map((item: string, index: number) => (
                                 <option key={index} value={item}>{item}</option>
                             ))}
-                        </select></>
-                    )}
-            </div>
+                        </select>
+                    </div>
 
-            <div>
-                <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
-                <select id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
-                    <option value="espaco">Espaço</option>
-                    <option value="capacidade">Capacidade</option>
-                </select>
-                <br />
-                {selectedCap_Sala === "capacidade" ? (
-                    <><label htmlFor='selectedItemCapacidade'>Capacidade:</label><input
-                        type="number"
-                        id="selectedItemCapacidade"
-                        value={selectedItemCapacidade || 0}
-                        min = '0'
-                        onChange={(e) => { setSelectedItemCapacidade(e.target.value); setSelectedItemSala("Tipo de Sala") }} /></>
-                ) :
-                    (
-                        <><label htmlFor='selectedItemSala'>Espaco:</label><select id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade(0) }}>
-                            <option value="Tipo de Sala">Tipo de Sala</option>
-                            {uniqueItemsSala.map((item: string, index: number) => (
-                                <option key={index} value={item}>{item}</option>
-                            ))}
-                        </select></>
-                    )}
-            </div>
+                    <div className="mb-4 flex justify-between">
+                        <label htmlFor="selectedItemUC">Selecione uma UC:</label>
+                        {selectedItemCurso !== "Curso" ? (
+                            <select className="w-[320px] select-text" id="selectedItemUC" value={selectedItemUC || ''} onChange={(e) => { setSelectedItemUC(e.target.value); }}>
+                                {uniqueItemsUC.map((item: string, index: number) => (
+                                    <option key={index} value={item}>{item}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div></div>
+                        )}
+                    </div>
 
-            <button onClick={() => setVerPossibilidades(!verPossibilidades)}>Ver Possibilidades</button>
+                    <div className="mb-4 flex justify-between">
+                        <label htmlFor="selectedItemTurma">Selecione as Turmas:</label>
+                        {selectedItemCurso !== "Curso" && selectedItemTurma !== null ? (
+                            <select className="w-[320px] select-text" id="selectedItemTurma" value={selectedItemTurma || ''} onChange={(e) => setSelectedItemTurma(e.target.value)}>
+                                {uniqueItemsTurma.map((item: string, index: number) => (
+                                    <option key={index} value={item}>{item}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div></div>
+                        )}
+
+                    </div>
+
+                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+
+                    <div className="mb-4 flex justify-between">
+                        <div className="ml-10 flex flex-row">
+                            <label htmlFor="selectedItemHoraInicio">Hora Inicio:</label>
+                            {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
+                                <select className="ml-10 mr-10 w-[150px] select-text" id="selectedItemHoraInicio" value={selectedItemHoraInicio || ''} onChange={(e) => setSelectedItemHoraInicio(e.target.value)}>
+                                    <option value="Hora Inicio">Hora Inicio</option>
+                                    {horas.map((item: string, index: number) => (
+                                        <option key={index} value={item}>{item}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div></div>
+                            )}
+                        </div>
+                        <div className="flex flex-row">
+                            <label htmlFor="selectedItemHoraFim">Hora Fim:</label>
+                            {selectedItemCurso !== "Curso" && selectedItemTurma !== null && selectedItemTurma !== null ? (
+                                <select className="ml-10 mr-10 w-[150px] select-text" id="selectedItemHoraFim" value={selectedItemHoraFim || ''} onChange={(e) => setSelectedItemHoraFim(e.target.value)}>
+                                    <option value="Hora Fim">Hora Fim</option>
+                                    {horas.map((item: string, index: number) => (
+                                        <option key={index} value={item}>{item}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div></div>
+                            )}
+                        </div>
+                    </div>
+
+                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+
+
+                    <div className="mb-4 flex justify-between">
+                        <label htmlFor="optionData">Escolha uma opção de data:</label>
+                        <select className="w-[320px] select-text" id="optionData" value={selectedDataAula || ''} onChange={(e) => setSelectedDataAula(e.target.value)}>
+                            <option value="diaSemana">Dia da Semana</option>
+                            <option value="diaAno">Data da aula</option>
+                        </select>
+                    </div>
+                    <div className="mb-4 flex justify-between">
+                        {selectedDataAula === "diaAno" ? (
+                            <>
+                                <label htmlFor='selectedItemDia'>Data da aula:</label>
+                                <select className="w-[320px] select-text" id="selectedItemDia" value={selectedItemDia || ''} onChange={(e) => { setSelectedItemDia(e.target.value); setSelectedItemDiaSemana(uniqueItemsDiaSemana[0]) }}>
+                                    {uniqueItemsDia.map((item: string, index: number) => (
+                                        <option key={index} value={item}>{item}</option>
+                                    ))}
+                                </select>
+                            </>
+                        ) :
+                            (
+                                <>
+                                    <label htmlFor='selectedItemDiaSemana'>Dia da Semana:</label>
+                                    <select className="w-[320px] select-text" id="selectedItemDiaSemana" value={selectedItemDiaSemana || ''} onChange={(e) => { setSelectedItemDiaSemana(e.target.value); setSelectedItemDia(uniqueItemsDia[0]) }}>
+                                        {uniqueItemsDiaSemana.map((item: string, index: number) => (
+                                            <option key={index} value={item}>{item}</option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
+                    </div>
+
+                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+
+                    <div className="mb-4 flex justify-between">
+                        <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
+                        <select className="w-[320px] select-text" id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
+                            <option value="espaco">Espaço</option>
+                            <option value="capacidade">Capacidade</option>
+                        </select>
+                    </div>
+                    <div className="mb-4 flex justify-between" >
+                        {selectedCap_Sala === "capacidade" ? (
+                            <>
+                                <label htmlFor='selectedItemCapacidade'>Capacidade:</label>
+                                <input className="w-[320px] select-text border border-black rounded-md pl-2 text-right"
+                                    type="number"
+                                    id="selectedItemCapacidade"
+                                    value={selectedItemCapacidade || 0}
+                                    min='0'
+                                    onChange={(e) => { setSelectedItemCapacidade(e.target.value); setSelectedItemSala("Tipo de Sala") }} />
+                            </>
+                        ) :
+                            (
+                                <>
+                                    <label htmlFor='selectedItemSala'>Espaco:</label>
+                                    <select className="w-[400px] select-text" id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade(0) }}>
+                                        <option value="Tipo de Sala">Tipo de Sala</option>
+                                        {uniqueItemsSala.map((item: string, index: number) => (
+                                            <option key={index} value={item}>{item}</option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
+                    </div>
+
+                </div>
+                <div className="col-span-3 flex justify-center">
+                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
+                        Ver Possibilidades
+                    </button>
+                </div>
+            </div>
         </div>
     )
 
