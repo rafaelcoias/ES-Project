@@ -115,10 +115,11 @@ export default function Home() {
       </h1>
       <button
         onClick={() => navigate("/MarcarAula")}
-        className="px-4 py-2 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
+        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
         Marcar Aula de Substituição
       </button>
-      <p className="text-black">Ficheiros:</p>
+      <hr className="ml-16 w-[90%] border-gray-400 my-4" />
+      <p className="text-black text-xl">Ficheiros:</p>
       <div className="grid grid-cols-1 gap-4 oito:grid-cols-2">
         {files && files.length !== 0 ? (
           files.map((file: any, index: number) => {
@@ -128,7 +129,7 @@ export default function Home() {
                 className="flex justify-between items-center bg-[var(--blue)] rounded-[25px] oito:h-[6rem] w-full text-white p-4 cinco:flex-row flex-col gap-4"
               >
                 <p className="flex flex-col w-full text-left max-w-[20rem] overflow-hidden">
-                  <span className="">Nome: </span> {file?.name}
+                  <span className="font-bold text-lg">Nome: </span> {file?.name}
                 </p>
                 <div className="flex gap-2 cinco:flex-col">
                   <button
