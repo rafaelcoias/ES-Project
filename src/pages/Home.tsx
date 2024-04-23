@@ -115,7 +115,7 @@ export default function Home() {
       </h1>
       <button
         onClick={() => navigate("/MarcarAula")}
-        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
+        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-white hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
         Marcar Aula de Substituição
       </button>
       <hr className="ml-16 w-[90%] border-gray-400 my-4" />

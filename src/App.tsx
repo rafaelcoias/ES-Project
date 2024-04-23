@@ -30,6 +30,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="/file/:name" element={<FilePage />} />
           <Route path="/MarcarAula" element={<MarcarAula />} />
+          {/* <Route path="/Possibilidades" element={<MatchingResults/>} /> */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>

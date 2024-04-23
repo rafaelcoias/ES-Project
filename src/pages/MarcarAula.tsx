@@ -55,7 +55,13 @@ export default function MarcarAula() {
     //fazer o ver possibilidades
     const [verPossibilidades, setVerPossibilidades] = useState<boolean>(false);
 
-    // Função para lidar com a mudança de arquivo de horários
+    /**
+    * Função para lidar com a mudança de arquivo de horários.
+    * Converte o arquivo Excel para JSON e define os dados resultantes no estado.
+    *
+    * @param {React.ChangeEvent<HTMLInputElement>} event - O evento de mudança que ocorre quando um arquivo é selecionado.
+    * @returns {void} - Esta função não retorna nenhum valor.
+    */
     const handleHorariosFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         if (
@@ -72,7 +78,13 @@ export default function MarcarAula() {
         }
     };
 
-    // Função para lidar com a mudança de arquivo de sala
+    /**
+     * Função para lidar com a mudança de arquivo de sala.
+     * Converte o arquivo Excel para JSON e define os dados resultantes no estado.
+     *
+     * @param {React.ChangeEvent<HTMLInputElement>} event - O evento de mudança que ocorre quando um arquivo é selecionado.
+     * @returns {void} - Esta função não retorna nenhum valor.
+     */
     const handleSalaFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         if (
@@ -89,6 +101,13 @@ export default function MarcarAula() {
         }
     };
 
+    /**
+     * Função para converter um arquivo Excel em JSON.
+     *
+     * @param {any} file - O arquivo Excel a ser convertido.
+     * @param {React.Dispatch<React.SetStateAction<any[]>>} setDataCallback - O callback para definir os dados resultantes no estado.
+     * @returns {void} - Esta função não retorna nenhum valor.
+     */
     const convertExcelToJson = (file: any, setDataCallback: React.Dispatch<React.SetStateAction<any[]>>) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -106,7 +125,12 @@ export default function MarcarAula() {
         reader.readAsArrayBuffer(file);
     };
 
-
+    /**
+     * Função para lidar com o botão de continuar.
+     * Realiza algumas verificações e atualiza o estado com base nos arquivos de horários e sala selecionados.
+     *
+     * @returns {void} - Esta função não retorna nenhum valor.
+     */
     const handleContinuar = () => {
         if (horariosFile && salaFile) {
             setUploading(true);
@@ -126,6 +150,9 @@ export default function MarcarAula() {
         }
     }
 
+    
+    //Função de efeito para mostrar as unidades curriculares com base no arquivo de horários selecionado.
+    //Atualiza o estado com as unidades curriculares únicas.
     useEffect(() => {
         const mostrarUC = () => {
             if (horariosFile) {
@@ -145,7 +172,8 @@ export default function MarcarAula() {
     }, [selectedItemCurso]);
 
 
-
+    //Atualiza a lista de turmas com base nos arquivos de horários e salas selecionados,
+    //bem como nas unidades curriculares e curso selecionados
     useEffect(() => {
         const mostrarTurmas = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
@@ -164,6 +192,8 @@ export default function MarcarAula() {
         mostrarTurmas();
     }, [selectedItemUC]);
 
+    //Atualiza a lista de dias disponíveis com base nos arquivos de horários, salas e turmas selecionados,
+    //bem como nas unidades curriculares e curso selecionados
     useEffect(() => {
         const mostrarDia = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
@@ -178,6 +208,8 @@ export default function MarcarAula() {
         mostrarDia();
     }, [selectedItemUC, selectedItemCurso, selectedItemTurma]);
 
+    //Atualiza a lista de dias da semana disponíveis com base nos arquivos de horários, salas e turmas selecionados,
+    //bem como nas unidades curriculares e curso selecionados.
     useEffect(() => {
         const mostrarDiaSemana = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
@@ -192,6 +224,8 @@ export default function MarcarAula() {
         mostrarDiaSemana();
     }, [selectedItemUC, selectedItemCurso, selectedItemTurma]);
 
+    //Atualiza a lista de salas disponíveis com base nos arquivos de horários, salas e turmas selecionados,
+    //bem como nas unidades curriculares e curso selecionados.
     useEffect(() => {
         const mostrarSala = () => {
             if (horariosFile && salaFile && selectedItemUC && selectedItemCurso && selectedItemTurma) {
@@ -216,7 +250,8 @@ export default function MarcarAula() {
     }, [selectedItemTurma]);
 
 
-
+    //Executa a verificação de possibilidades quando o estado 'verPossibilidades' é alterado.
+    //Verifica se todos os campos necessários estão preenchidos corretamente.
     useEffect(() => {
         if (verPossibilidades) {
             const handleVerPossibilidades = () => {
@@ -270,10 +305,7 @@ export default function MarcarAula() {
         }
     }, [verPossibilidades]);
 
-
-
     ////////////////////////////////PAGINA HTML/////////////////////////////////
-
 
     if (!uploading) {
         return (
@@ -319,7 +351,7 @@ export default function MarcarAula() {
                 </div>
 
 
-                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300" onClick={handleContinuar}>Continuar</button>
+                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-white hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={handleContinuar}>Continuar</button>
             </div>
         );
     }
@@ -373,7 +405,7 @@ export default function MarcarAula() {
 
                     </div>
 
-                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+                    <hr className="ml-4 w-[95%] border-gray-400 my-6" />
 
                     <div className="mb-4 flex justify-between">
                         <div className="ml-10 flex flex-row">
@@ -404,7 +436,7 @@ export default function MarcarAula() {
                         </div>
                     </div>
 
-                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+                    <hr className="ml-4 w-[95%] border-gray-400 my-6" />
 
 
                     <div className="mb-4 flex justify-between">
@@ -437,7 +469,7 @@ export default function MarcarAula() {
                             )}
                     </div>
 
-                    <hr className="ml-4 w-[95%] border-gray-400 my-4" />
+                    <hr className="ml-4 w-[95%] border-gray-400 my-6" />
 
                     <div className="mb-4 flex justify-between">
                         <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
@@ -461,7 +493,7 @@ export default function MarcarAula() {
                             (
                                 <>
                                     <label htmlFor='selectedItemSala'>Espaco:</label>
-                                    <select className="w-[400px] select-text" id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade(0) }}>
+                                    <select className="w-[320px] select-text" id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value); setSelectedItemCapacidade(0) }}>
                                         <option value="Tipo de Sala">Tipo de Sala</option>
                                         {uniqueItemsSala.map((item: string, index: number) => (
                                             <option key={index} value={item}>{item}</option>
@@ -473,7 +505,7 @@ export default function MarcarAula() {
 
                 </div>
                 <div className="col-span-3 flex justify-center">
-                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-md hover:bg-white hover:text-[var(--blue)] transition-all duration-300">
+                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-white hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
                         Ver Possibilidades
                     </button>
                 </div>
