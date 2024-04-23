@@ -351,7 +351,7 @@ export default function MarcarAula() {
                 </div>
 
 
-                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-white hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={handleContinuar}>Continuar</button>
+                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={handleContinuar}>Continuar</button>
             </div>
         );
     }
@@ -505,7 +505,7 @@ export default function MarcarAula() {
 
                 </div>
                 <div className="col-span-3 flex justify-center">
-                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-white hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
                         Ver Possibilidades
                     </button>
                 </div>

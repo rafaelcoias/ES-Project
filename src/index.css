@@ -22,6 +22,7 @@
 /* Definir variaveis css */
 :root {
   --blue: #0d28c2;
+  --white: #eeeeee;
 }
 
 /* Definir layout geral de todos os elementos */
@@ -33,7 +34,7 @@
 }
 
 body {
-  background-color: #eeeeee;
+  background-color: var(--white);
 }
 
 /* Classes gerais */
