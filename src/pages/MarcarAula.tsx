@@ -269,7 +269,8 @@ export default function MarcarAula() {
                     alert("Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'.");
                     return; // Sai da função se algum dos campos estiver com valor incorreto
                 }
-
+                
+                // Verifica se se a hora de início é mais antiga que a hora de fim
                 if (!isHoraMaisRecente(horaFim, horaInicio)) {
                     alert("A 'Hora Inicio' tem que ser mais antiga que a 'Hora Fim'!");
                 }
