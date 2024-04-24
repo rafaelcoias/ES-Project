@@ -43,7 +43,7 @@ export default function MarcarAula() {
     // escolha dia do mes ou dia da semnana
     const [selectedDataAula, setSelectedDataAula] = useState<any>(null);
 
-    //escolha capcidade
+    //escolha capacidade
     const [selectedItemCapacidade, setSelectedItemCapacidade] = useState<any>(null);
 
     //escolha sala
