@@ -274,17 +274,21 @@ export default function MarcarAula() {
                     alert("A 'Hora Inicio' tem que ser mais antiga que a 'Hora Fim'!");
                 }
 
+                // Verifica se foi selecionado um dia da semana
                 const diaSemana = selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
                 if (selectedDataAula === 'diaSemana') {
                     if (diaSemana === 'Dia da semana')
                         alert("Escolha um dia da semana!");
                 }
+
+                // Verifica se foi selecionado um dia do ano
                 const diaAno = selectedDataAula === 'diaAno' ? selectedItemDia : null;
                 if (selectedDataAula === 'diaAno') {
                     if (diaAno === 'Data da aula')
                         alert("Escolha um dia da ano!");
                 }
 
+                // Verifica se foi selecionado um tipo de sala
                 console.log(selectedCap_Sala);
                 const espaco = selectedCap_Sala === 'espaco' ? selectedItemSala : null;
                 console.log(espaco);
@@ -292,7 +296,8 @@ export default function MarcarAula() {
                     if (espaco === "Tipo de Sala")
                         alert("Escolha o Tipo de sala!");
                 }
-
+                
+                //Verifica se a capacidade selecionada é maior que 0
                 const capacidade = selectedCap_Sala === 'capacidade' ? selectedItemCapacidade : null;
                 console.log(capacidade);
                 if (selectedCap_Sala === 'capacidade') {
