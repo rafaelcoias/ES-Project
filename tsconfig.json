@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "jsx": "react",
+    "target": "es6",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -18,10 +18,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "allowJs": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "noResolve": false,
+    "noImplicitAny": false
   },
   "include": [
     "src",
-    "react-app-env.d.ts"  
+    "react-app-env.d.ts",
+    "./node_modules/**/*"
   ]
 }
