@@ -12,33 +12,11 @@ export default function HeatMapGenerator() {
     const [horariosFileName, setHorariosFileName] = useState<string>("");
     //guardar nome do ficheiro sala
     const [salasFileName, setSalasFileName] = useState<string>("");
-    const [uniqueItemsDiaSemana, setUniqueItemsDiaSemana] = useState<any>([]);
 
+    const [semana, setSemana] = useState<any>(null);
 
     const heatmapRef = useRef<SVGSVGElement | null>(null);
 
-    useEffect(() => {
-        if (!horariosFile || !salasFile) return;
-
-        setLoading(true);
-
-        const filteredData = horariosFile.slice(1).map((row: any) => ({
-            horaInicio: row[6],
-            diaSemana: row[5],
-        }));
-
-        const occupancyData = Array.from({ length: 32 }, (_, i) => Array(6).fill(0));
-
-        filteredData.forEach((row: any) => {
-            const horaInicio = row.horaInicio.split(':').map(Number);
-            const horaInicioIndex = Math.floor((horaInicio[0] - 8) * 2 + horaInicio[1] / 30);
-            const diaSemanaIndex = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].indexOf(row.diaSemana);
-            occupancyData[horaInicioIndex][diaSemanaIndex]++;
-        });
-
-        setData(occupancyData);
-        setLoading(false);
-    }, [horariosFile, salasFile]);
 
     const generateHeatmap = () => {
         if (!heatmapRef.current || !data) {
@@ -46,13 +24,39 @@ export default function HeatMapGenerator() {
             return;
         }
 
-        const combinedHoursData = horariosFile.map((row: any) => [row[6], row[7]]).flat();
+        const dados = horariosFile.filter((row: any) => {
+            // Acesso ao valor da primeira coluna de "row"
+            const primeiraColuna = row[0];
+            // Verifica se o valor da primeira coluna é igual a "semana"
+            return primeiraColuna === semana;
+        });
+        
+        setData(dados); // Aqui você define a variável "data"
+
+        // Agora, calcule as contagens de ocorrências de horas
+        const combinedHoursData = dados.map((row: any) => [row[8], row[9]]).flat();
         const uniqueHoursSet = new Set(combinedHoursData);
         const uniqueHoursArray = Array.from(uniqueHoursSet);
 
-        const columnData: any[] = horariosFile.map((row: any) => row[5]);
+        const columnData: any[] = dados.map((row: any) => row[7]).flat();
         const uniqueItemsDiaSemana = Array.from(new Set(columnData)).slice(1);
 
+        // Inicializa a matriz de contagem
+        const counts: number[][] = Array.from({ length: uniqueHoursArray.length }, () => Array(uniqueItemsDiaSemana.length).fill(''));
+        console.log(counts);
+        // Percorre os dados e conta as ocorrências de horas em cada dia da semana
+        dados.forEach((row: any) => {
+            const diaSemana = row[7].toString();
+            const horaInicio = row[8].toString();
+            const horaFim = row[9].toString();
+
+            counts[diaSemana][horaInicio]++;
+            counts[diaSemana][horaFim]++;
+        });
+
+        //  console.log(counts);
+
+        // A matriz "counts" agora contém o número de vezes que cada hora aparece em cada dia da semana
 
         const cellSize = 50; // Tamanho de cada célula no heatmap
         const svg = d3.select(heatmapRef.current);
@@ -66,7 +70,7 @@ export default function HeatMapGenerator() {
 
         svg
             .selectAll('rect')
-            .data(data.flat())
+            .data(counts.flat())
             .enter()
             .append('rect')
             .attr('x', (_, i) => (Math.floor(i / uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento horizontal
@@ -98,6 +102,7 @@ export default function HeatMapGenerator() {
             .style('text-anchor', 'middle')
             .attr('class', 'hourLabel');
     };
+
 
 
     const handleHorariosFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,7 +198,7 @@ export default function HeatMapGenerator() {
                 </div>
 
 
-                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={generateHeatmap}>Gerar HeatMap</button>
+                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateHeatmap(); setSemana(1); }}>Gerar HeatMap</button>
             </div>
             {loading ? (
                 <div>A carregar...</div>

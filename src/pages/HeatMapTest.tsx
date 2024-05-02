@@ -14,10 +14,11 @@ export default function HeatMapTest({ data }) {
     const height = 720;
     const colorScale = d3.scaleSequential(d3.interpolateMagma).domain([0, 100]);
 
+    console.log(data);
     // Desenha o heatmap
     svg.attr('width', width).attr('height', height);
 
-    const cellSize = 50; // Tamanho de cada célula no heatmap
+    const cellSize = 30; // Tamanho de cada célula no heatmap
 
     // Desenha os quadrados para cada célula do heatmap
     svg
