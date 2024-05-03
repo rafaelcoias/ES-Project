@@ -118,6 +118,11 @@ export default function Home() {
         className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
         Marcar Aula de Substituição
       </button>
+      <button
+        onClick={() => navigate("/HeatMapGenerator")}
+        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+        HeatMap
+      </button>
       <hr className="ml-16 w-[90%] border-gray-400 my-4" />
       <p className="text-black text-xl">Ficheiros:</p>
       <div className="grid grid-cols-1 gap-4 oito:grid-cols-2">
