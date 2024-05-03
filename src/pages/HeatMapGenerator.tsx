@@ -13,48 +13,46 @@ export default function HeatMapGenerator() {
     //guardar nome do ficheiro sala
     const [salasFileName, setSalasFileName] = useState<string>("");
 
-    const [semana, setSemana] = useState<any>(null);
+    const [semana, setSemana] = useState<any>(1);
 
     const heatmapRef = useRef<SVGSVGElement | null>(null);
 
 
     const generateHeatmap = () => {
-        if (!heatmapRef.current || !data) {
+        if (!heatmapRef.current || !salasFile || !horariosFile) {
             alert('Por favor, faça upload dos dois arquivos antes de gerar o heatmap.');
             return;
         }
 
+        const numSemana = parseInt(semana);
         const dados = horariosFile.filter((row: any) => {
-            // Acesso ao valor da primeira coluna de "row"
-            const primeiraColuna = row[0];
-            // Verifica se o valor da primeira coluna é igual a "semana"
-            return primeiraColuna === semana;
+            const primeiraColuna = parseInt(row[0]);
+            return primeiraColuna === numSemana;
         });
-        
+
+
         setData(dados); // Aqui você define a variável "data"
 
         // Agora, calcule as contagens de ocorrências de horas
         const combinedHoursData = dados.map((row: any) => [row[8], row[9]]).flat();
         const uniqueHoursSet = new Set(combinedHoursData);
-        const uniqueHoursArray = Array.from(uniqueHoursSet);
-
+        let uniqueHoursArray = Array.from(uniqueHoursSet);
+        uniqueHoursArray.sort();
         const columnData: any[] = dados.map((row: any) => row[7]).flat();
-        const uniqueItemsDiaSemana = Array.from(new Set(columnData)).slice(1);
-
+        const uniqueItemsDiaSemana = Array.from(new Set(columnData));
         // Inicializa a matriz de contagem
-        const counts: number[][] = Array.from({ length: uniqueHoursArray.length }, () => Array(uniqueItemsDiaSemana.length).fill(''));
-        console.log(counts);
+        const rows1 = uniqueHoursArray.length;
+        const columns1 = uniqueItemsDiaSemana.length;
+        let counts = Array.from(Array(rows1), () => new Array(columns1).fill(0));
+
         // Percorre os dados e conta as ocorrências de horas em cada dia da semana
         dados.forEach((row: any) => {
-            const diaSemana = row[7].toString();
-            const horaInicio = row[8].toString();
-            const horaFim = row[9].toString();
-
-            counts[diaSemana][horaInicio]++;
-            counts[diaSemana][horaFim]++;
+            const diaSemana = uniqueItemsDiaSemana.indexOf(row[7].toString());
+            const horaInicio = uniqueHoursArray.indexOf(row[8].toString());
+            const horaFim = uniqueHoursArray.indexOf(row[9].toString());
+            counts[horaInicio][diaSemana]++;
+            counts[horaFim][diaSemana]++;
         });
-
-        //  console.log(counts);
 
         // A matriz "counts" agora contém o número de vezes que cada hora aparece em cada dia da semana
 
@@ -63,9 +61,10 @@ export default function HeatMapGenerator() {
 
         const width = (uniqueItemsDiaSemana.length + 1) * cellSize; // Ajusta a largura com base no tamanho de uniqueItemsDiaSemana
         const height = (uniqueHoursArray.length + 1) * cellSize; // Ajusta a altura com base no tamanho de uniqueHoursArray
-        const colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain([0, 100]); // Define a escala de cores
+        const colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain([50, 0]); // Define a escala de cores
 
-        // Desenha o heatmap
+        d3.select(heatmapRef.current).selectAll("*").remove();
+        //Desenha o heatmap
         svg.attr('width', width).attr('height', height);
 
         svg
@@ -73,11 +72,12 @@ export default function HeatMapGenerator() {
             .data(counts.flat())
             .enter()
             .append('rect')
-            .attr('x', (_, i) => (Math.floor(i / uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento horizontal
-            .attr('y', (_, i) => (i % uniqueHoursArray.length) * cellSize) // Ajusta o posicionamento vertical
+            .attr('x', (_, i) => ((i % uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento horizontal
+            .attr('y', (_, i) => (Math.floor(i / uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento vertical
             .attr('width', cellSize)
             .attr('height', cellSize)
             .attr('fill', d => colorScale(d));
+
 
         svg
             .selectAll('.dayLabel')
@@ -85,22 +85,28 @@ export default function HeatMapGenerator() {
             .enter()
             .append('text')
             .text(d => d)
-            .attr('x', 0)
-            .attr('y', (_, i) => (i + 1) * cellSize + cellSize / 2)
-            .attr('dy', '0.35em')
-            .style('text-anchor', 'end')
+            .attr('x', (_, i) => (i + 1) * cellSize + cellSize/2) // Ajusta o posicionamento horizontal
+            .attr('y', 10) // Ajusta o posicionamento vertical
+            .attr('dy', '0.35em') // Desloca o texto verticalmente para alinhá-lo corretamente dentro da célula.
+            .style('text-anchor', 'middle') // Centraliza o texto.
             .attr('class', 'dayLabel');
 
-        svg
+            svg
             .selectAll('.hourLabel')
             .data(uniqueHoursArray)
             .enter()
             .append('text')
-            .text(d => `${d}:00`)
-            .attr('x', (_, i) => i * cellSize + cellSize / 2)
-            .attr('y', -5)
-            .style('text-anchor', 'middle')
+            .text(d => {
+                const parts = d.split(':');
+                return `${parts[0]}:${parts[1]}`; // Retorna apenas as horas e minutos
+            })
+            .attr('x', 50) // Ajusta o posicionamento horizontal
+            .attr('y', (_, i) => (i + 1) * cellSize + cellSize/2 ) // Ajusta o posicionamento vertical
+            .attr('dy', '0.35em') // Desloca o texto verticalmente para alinhá-lo corretamente dentro da célula.
+            .style('text-anchor', 'end') // Alinha o texto à direita.
             .attr('class', 'hourLabel');
+        
+
     };
 
 
@@ -196,14 +202,23 @@ export default function HeatMapGenerator() {
                         </div>
                     </div>
                 </div>
+                <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
+                    <p className="text-center text-lg font-bold">Definir Semana
+                    </p>
+                    <input type="number" min="1" value={semana} onChange={(e) => setSemana(e.target.value)} className="text-lg" />
+                </div>
 
-
-                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateHeatmap(); setSemana(1); }}>Gerar HeatMap</button>
+                <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateHeatmap() }}>Gerar HeatMap</button>
             </div>
             {loading ? (
                 <div>A carregar...</div>
             ) : (
-                <svg ref={heatmapRef} />
+                <div>
+                    <br />
+                    <svg ref={heatmapRef} />
+                    <br />
+                    <br />
+                </div>
             )}
         </div>
     );

@@ -26,9 +26,7 @@ import HeatMapTest from "./pages/HeatMapTest";
 function App() {
   // Dados de exemplo: um array de objetos onde cada objeto tem uma propriedade "value"
   // representando a intensidade do heatmap para um determinado ponto
-  const data = Array.from({ length: 7 * 16 }, (_, i) => ({
-    value: Math.floor(Math.random() * 100), // Valor aleatório de 0 a 100
-  }));
+
   return (
     <>
       <BrowserRouter>
@@ -37,7 +35,7 @@ function App() {
           <Route path="/file/:name" element={<FilePage />} />
           <Route path="/MarcarAula" element={<MarcarAula />} />
           <Route path="/HeatMapGenerator" element={<HeatMapGenerator />} />
-          <Route path="/HeatMapTest" element={<HeatMapTest  data={data}/>} />
+          <Route path="/HeatMapTest" element={<HeatMapTest/>} />
           
           {/* <Route path="/Possibilidades" element={<MatchingResults/>} /> */}
           <Route path="*" element={<NotFoundPage />} />

@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function HeatMapTest({ data }) {
+export default function HeatMapTest() {
   const heatmapRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
+    const data = Array.from({ length: 7 * 16 }, (_, i) => ({
+      value: Math.floor(Math.random() * 100), // Valor aleatório de 0 a 100
+    }));
     if (!heatmapRef.current || !data) return;
 
+  
     const svg = d3.select(heatmapRef.current);
 
     // Define o tamanho do SVG e a escala para o heatmap
@@ -14,7 +18,6 @@ export default function HeatMapTest({ data }) {
     const height = 720;
     const colorScale = d3.scaleSequential(d3.interpolateMagma).domain([0, 100]);
 
-    console.log(data);
     // Desenha o heatmap
     svg.attr('width', width).attr('height', height);
 
@@ -57,7 +60,7 @@ export default function HeatMapTest({ data }) {
       .attr('y', -5)
       .style('text-anchor', 'middle')
       .attr('class', 'hourLabel');
-  }, [data]);
+  });
 
   return <svg ref={heatmapRef} />;
 }
