@@ -119,10 +119,6 @@ export default function Home() {
         Marcar Aula de Substituição
       </button>
       <button
-        onClick={() => navigate("/HeatMapTest")}
-        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
-        HeatMapTest
-      </button><button
         onClick={() => navigate("/HeatMapGenerator")}
         className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
         HeatMap
