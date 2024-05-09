@@ -6,7 +6,8 @@ import FilePage from "./pages/FilePage";
 import NotFoundPage from "./pages/NotFound";
 import MarcarAula from "./pages/MarcarAula";
 import HeatMapGenerator from "./pages/HeatMapGenerator";
-import NetworkGraphTest from "./pages/NetworkGraphTest";
+import NetworkGraph from "./pages/NetworkGraph";
+
 // Este é o ficheiro principal onde vai estar a App toda,
 // É usado reac-router-dom para criar rotas
 // de navegação pela App. Cada route é uma página diferente.
@@ -35,7 +36,7 @@ function App() {
           <Route path="/file/:name" element={<FilePage />} />
           <Route path="/MarcarAula" element={<MarcarAula />} />
           <Route path="/HeatMapGenerator" element={<HeatMapGenerator />} />
-          <Route path="/NetworkGraphTest" element={<NetworkGraphTest />} />
+          <Route path="/NetworkGraph" element={<NetworkGraph />} />
           {/* <Route path="/Possibilidades" element={<MatchingResults/>} /> */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

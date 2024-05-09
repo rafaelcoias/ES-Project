@@ -122,10 +122,10 @@ export default function Home() {
         onClick={() => navigate("/HeatMapGenerator")}
         className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
         HeatMap
-      </button> <button
-        onClick={() => navigate("/NetworkGraphTest")}
+      </button><button
+        onClick={() => navigate("/NetworkGraph")}
         className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
-        NetworkGraphTest
+        NetworkGraph
       </button>
       <hr className="ml-16 w-[90%] border-gray-400 my-4" />
       <p className="text-black text-xl">Ficheiros:</p>

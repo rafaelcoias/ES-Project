@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as XLSX from 'xlsx';
 import * as d3 from 'd3';
+import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router-dom";
-export default function HeatMapGenerator() {
+import { isTimeRangeInside } from "../js/auxilioNetworkGraph.js";
+
+export default function NetworkGraph() {
+    const networkGraphRef = useRef(null);
     const navigate = useNavigate();
     const [horariosFile, setHorariosFile] = useState<any>(null);
     const [data, setData] = useState<any[]>([]);
@@ -17,15 +20,40 @@ export default function HeatMapGenerator() {
     const [selectedItemSala, setSelectedItemSala] = useState<any>(null);
 
     const [upload, setUpload] = useState<any>(false)
+    const drag = (simulation) => {
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
 
-    const generateHeatmap = () => {
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        return d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended);
+    }
+
+
+
+
+    const generateNetworGraph = () => {
         //verificar se os ficheiro existem 
-        if (!heatmapRef.current || !horariosFile) {
-            alert('Por favor, faça upload do arquivo antes de gerar o heatmap.');
+        if (!networkGraphRef.current || !horariosFile) {
+            alert('Por favor, faça upload do arquivo antes de gerar o NetworkGraph.');
             return;
         }
 
-        //Extrair a semana 
         const numSemana = parseInt(semana);
 
         //Dependendo do tipo de sala o filtro é por todoas as salas de for "Tip de Sala" ou pela especifica escolhida
@@ -38,89 +66,113 @@ export default function HeatMapGenerator() {
             return colunaSemana === numSemana && colunaSala === selectedItemSala;
         });
 
+        
 
-        setData(dados); // Aqui você define a variável "data"
+        setData(dados);
 
-        // Guardar toadas as horas a mostar e ordenar
-        const combinedHoursData = dados.map((row: any) => [row[8], row[9]]).flat();
-        const uniqueHoursSet = new Set(combinedHoursData);
-        let uniqueHoursArray = Array.from(uniqueHoursSet);
-        uniqueHoursArray.sort();
+        const turnos = dados.map((row: any) => row[4]).flat();
+        const uniqueTurnosSet = new Set(turnos);
+        const uniqueTurnosArray = Array.from(uniqueTurnosSet);
 
+        const checkTurnos = uniqueTurnosArray.map((turno: any) => {
+            const rowsSemTurno = dados.filter(row => {
+                const colunaSemana = parseInt(row[0]);
+                return colunaSemana === numSemana && row[4] !== turno;
+            });
+            const rowsDoTurno = dados.filter(row => {
+                const colunaSemana = parseInt(row[0]);
+                return colunaSemana === numSemana && row[4] === turno;
+            });
 
-        //guardar todos os dias de semana e ordenar
-        const columnData: any[] = dados.map((row: any) => row[7]).flat();
-        let uniqueItemsDiaSemana = Array.from(new Set(columnData));
-
-        let order = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'SÃ¡b'];
-
-        uniqueItemsDiaSemana.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-
-        // Inicializa a matriz de contagem
-        const rows1 = uniqueHoursArray.length;
-        const columns1 = uniqueItemsDiaSemana.length;
-        let counts = Array.from(Array(rows1), () => new Array(columns1).fill(0));
-
-        // Percorre os dados e conta as ocorrências de horas em cada dia da semana
-        dados.forEach((row: any) => {
-            const diaSemana = uniqueItemsDiaSemana.indexOf(row[7].toString());
-            const horaInicio = uniqueHoursArray.indexOf(row[8].toString());
-            const horaFim = uniqueHoursArray.indexOf(row[9].toString());
-            counts[horaInicio][diaSemana]++;
-            counts[horaFim][diaSemana]++;
+            const matchingRows = rowsSemTurno.filter(rowSemTurno =>
+                rowsDoTurno.some(rowDoTurno =>
+                    rowSemTurno[10] === rowDoTurno[10] && rowSemTurno[12] === rowDoTurno[12] &&
+                    isTimeRangeInside(rowSemTurno[8], rowSemTurno[9], rowDoTurno[8], rowDoTurno[9])
+                )
+            );
+            return { turno, matchingRows };
         });
 
-        // A matriz "counts" agora contém o número de vezes que cada hora aparece em cada dia da semana
+        const allNodeIds = new Set([
+            ...checkTurnos.map(obj => obj.turno),
+            ...checkTurnos.flatMap(obj => obj.matchingRows.map(row => row[12]))
+        ]);
 
-        const cellSize = 50; // Tamanho de cada célula no heatmap
-        const svg = d3.select(heatmapRef.current);
+        const network = {
+            nodes: Array.from(allNodeIds).map(id => ({ id })),
+            links: checkTurnos.flatMap(obj => obj.matchingRows.map(row => ({ source: obj.turno, target: row[4] }))),
+        };
 
-        const width = (uniqueItemsDiaSemana.length + 1) * cellSize; // Ajusta a largura com base no tamanho de uniqueItemsDiaSemana
-        const height = (uniqueHoursArray.length + 1) * cellSize; // Ajusta a altura com base no tamanho de uniqueHoursArray
-        const colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain([50, 0]); // Define a escala de cores
+        d3.select(networkGraphRef.current).selectAll("*").remove();
 
-        d3.select(heatmapRef.current).selectAll("*").remove();
-        //Desenha o heatmap
-        svg.attr('width', width).attr('height', height);
-
-        svg
-            .selectAll('rect')
-            .data(counts.flat())
-            .enter()
-            .append('rect')
-            .attr('x', (_, i) => ((i % uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento horizontal
-            .attr('y', (_, i) => (Math.floor(i / uniqueItemsDiaSemana.length) + 1) * cellSize) // Ajusta o posicionamento vertical
-            .attr('width', cellSize)
-            .attr('height', cellSize)
-            .attr('fill', d => colorScale(d));
+        const width =1600;
+        const height = 1200;
+        const svg = d3.select(networkGraphRef.current)
+            .attr('width', width)
+            .attr('height', height);
 
 
-        svg
-            .selectAll('.dayLabel')
-            .data(uniqueItemsDiaSemana)
-            .enter()
-            .append('text')
-            .text(d => d)
-            .attr('x', (_, i) => (i + 1) * cellSize + cellSize / 2) // Ajusta o posicionamento horizontal
-            .attr('y', 10) // Ajusta o posicionamento vertical
-            .attr('dy', '0.35em') // Desloca o texto verticalmente para alinhá-lo corretamente dentro da célula.
-            .style('text-anchor', 'middle') // Centraliza o texto.
-            .attr('class', 'dayLabel');
+        // Crie um novo Set com os IDs de todos os nós que aparecem em um link
+        const linkedNodeIds = new Set([
+            ...network.links.map(link => link.source),
+            ...network.links.map(link => link.target)
+        ]);
 
-        svg
-            .selectAll('.hourLabel')
-            .data(uniqueHoursArray)
-            .enter()
-            .append('text')
-            .text(d => {
-                const parts = d.split(':');
-                return `${parts[0]}:${parts[1]}`; // Retorna apenas as horas e minutos
-            })
-            .attr('x', 50) // Ajusta o posicionamento horizontal
-            .attr('y', (_, i) => (i + 1) * cellSize + cellSize / 2) // Ajusta o posicionamento vertical
-            .attr('dy', '0.35em') // Desloca o texto verticalmente para alinhá-lo corretamente dentro da célula.
-            .style('text-anchor', 'end') // Alinha o texto à direita.
-            .attr('class', 'hourLabel');
+        // Filtra os nós para incluir apenas aqueles cujo ID aparece em linkedNodeIds
+        const linkedNodes = network.nodes.filter(node => linkedNodeIds.has(node.id));
+
+        // Use linkedNodes em vez de network.nodes ao criar a simulação
+        const simulation = d3.forceSimulation(linkedNodes)
+            .force('link', d3.forceLink(network.links).id(d => d.id).distance(10)) // aumenta a distância entre nós conectados
+            .force('charge', d3.forceManyBody().strength(-5))
+            .force('center', d3.forceCenter(width / 2, height / 2));
+
+        // Use linkedNodes em vez de network.nodes ao criar os elementos SVG
+        const node = svg.append('g')
+            .selectAll('circle')
+            .data(linkedNodes)
+            .join('circle')
+            .attr('r', 10)
+            .attr('fill', '#69b3a2')
+            .call(drag(simulation));
+
+        const labels = svg.append('g')
+            .selectAll('text')
+            .data(linkedNodes)
+            .join('text')
+            .text(d => d.id)
+            .attr('x', d => d.x)
+            .attr('y', d => d.y)
+            .attr('font-family', 'sans-serif')
+            .attr('font-size', '10px')
+            .attr('fill', 'black');
+
+
+        const link = svg.append('g')
+            .selectAll('line')
+            .data(network.links)
+            .join('line')
+            .attr('stroke', '#999')
+            .attr('stroke-opacity', 0.6)
+            .attr('stroke-width', d => Math.sqrt(d.value));
+
+
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x + 10) // offset the label a bit to the right of the node
+                .attr('y', d => d.y);
+        });
 
     };
 
@@ -176,7 +228,7 @@ export default function HeatMapGenerator() {
 
             <div className="flex flex-col items-center justify-center">
                 <h1 className="text-[1.5rem] quatro:text-[2rem] font-bold">
-                    HeatMap
+                    NetworkGraph
                 </h1>
                 <div className="absolute top-8 left-[4vw] font-mybold text-black">
                     <button
@@ -218,7 +270,7 @@ export default function HeatMapGenerator() {
                                 ))}
                             </select>
                         </div>
-                        <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateHeatmap() }}>Gerar HeatMap</button>
+                        <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateNetworGraph() }}>Gerar NetworGraph</button>
                     </>
                 )}
                 {loading ? (
@@ -226,7 +278,7 @@ export default function HeatMapGenerator() {
                 ) : (
                     <div>
                         <br />
-                        <svg ref={heatmapRef} />
+                        <svg ref={networkGraphRef} />
                         <br />
                         <br />
                     </div>
@@ -234,5 +286,4 @@ export default function HeatMapGenerator() {
             </div>
         </div>
     );
-
-}
+};
