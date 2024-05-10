@@ -66,7 +66,7 @@ export default function NetworkGraph() {
             return colunaSemana === numSemana && colunaSala === selectedItemSala;
         });
 
-        
+
 
         setData(dados);
 
@@ -105,7 +105,7 @@ export default function NetworkGraph() {
 
         d3.select(networkGraphRef.current).selectAll("*").remove();
 
-        const width =1600;
+        const width = 1600;
         const height = 1200;
         const svg = d3.select(networkGraphRef.current)
             .attr('width', width)
@@ -189,6 +189,11 @@ export default function NetworkGraph() {
         }
     }, [horariosFile]);
 
+    /**
+    * Manipula a mudança de arquivo de horários.
+    * 
+    * @param {React.ChangeEvent<HTMLInputElement>} event - O evento de mudança de input.
+    */
     const handleHorariosFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         if (
@@ -205,7 +210,12 @@ export default function NetworkGraph() {
         }
     };
 
-
+    /**
+    * Converte um arquivo Excel para JSON e atualiza o estado de dados utilizando a função de retorno de chamada.
+    *
+    * @param {any} file - O arquivo Excel a ser convertido.
+    * @param {React.Dispatch<React.SetStateAction<any>>} setDataCallback - A função de retorno de chamada para atualizar o estado de dados.
+    */
     const convertExcelToJson = (file: any, setDataCallback: React.Dispatch<React.SetStateAction<any>>) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -256,19 +266,20 @@ export default function NetworkGraph() {
                 </div>
                 {upload && (
                     <>
-                        <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
-                            <p className="text-center text-lg font-bold">Definir Semana
-                            </p>
-                            <input type="number" min="1" value={semana} onChange={(e) => setSemana(e.target.value)} className="text-lg" />
-                        </div>
-                        <div>
-                            <label htmlFor='selectedItemSala'>Espaco:</label>
-                            <select className="w-[320px] select-text" id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value) }}>
-                                <option value="Tipo de Sala">Tipo de Sala</option>
-                                {uniqueItemsSala.map((item: string, index: number) => (
-                                    <option key={index} value={item}>{item}</option>
-                                ))}
-                            </select>
+                         <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px] mt-10 w-[350px]">
+                            <div className='flex justify-between'>
+                            <label htmlFor='selectedItemSala'>Semana:</label>
+                                <input type="number" min="1" value={semana} onChange={(e) => setSemana(e.target.value)} className="text-lg w-[150px] text-black text-right" />
+                            </div>
+                            <div className='flex justify-between'>
+                                <label htmlFor='selectedItemSala'>Espaco:</label>
+                                <select className="w-[150px] select-text" id="selectedItemSala" value={selectedItemSala || ''} onChange={(e) => { setSelectedItemSala(e.target.value) }}>
+                                    <option value="Tipo de Sala">Tipo de Sala</option>
+                                    {uniqueItemsSala.map((item: string, index: number) => (
+                                        <option key={index} value={item}>{item}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         <button className="mt-20 px-10 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300" onClick={() => { generateNetworGraph() }}>Gerar NetworGraph</button>
                     </>
