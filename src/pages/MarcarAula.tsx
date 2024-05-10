@@ -6,6 +6,7 @@ import {
 } from '../js/auxilioEscolhaAula';
 import { useNavigate } from 'react-router-dom';
 import reportWebVitals from '../reportWebVitals';
+import { log } from 'console';
 
 export default function MarcarAula() {
 	const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function MarcarAula() {
 	const [uniqueItemsDiaSemana, setUniqueItemsDiaSemana] = useState<any>([]);
 	const [selectedItemDiaSemana, setSelectedItemDiaSemana] = useState<any>(null);
 	// escolha dia do mes ou dia da semnana
-	const [selectedDataAula, setSelectedDataAula] = useState<any>(null);
+	const [selectedDataAula, setSelectedDataAula] = useState<any>('diaSemana');
 
 	//escolha capacidade
 	const [selectedItemCapacidade, setSelectedItemCapacidade] =
@@ -59,13 +60,13 @@ export default function MarcarAula() {
 	const [selectedCap_Sala, setSelectedCap_Sala] = useState<any>('espaco');
 
 	//Impossibilidades guarda as linhas filtradas do horario para verificar o que vai contra a nossa procura
-	const [impossibilidades, setImpossibilidades] = useState<any>([]);
+	// const [impossibilidades, setImpossibilidades] = useState<any>([]);
 
 	// Vai ser populado com o geral das horas e datas menos das horas e datas presentes nas impossibilidades
 	const [possibilidades, setPossibilidades] = useState<any[][]>([
-		['Sala', 'Dia', 'Hora Inicio', 'Hora Fim'],
+		['Sala', 'Data', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
 	]);
-	const [nomesSalas, setNomesSalas] = useState<any[]>([]);
+	// const [nomesSalas, setNomesSalas] = useState<any[]>([]);
 
 	const [verPossibilidades, setVerPossibilidades] = useState<boolean>(false);
 
@@ -150,16 +151,30 @@ export default function MarcarAula() {
 		start: string,
 		end: string
 	) => {
+		const rows: any[][] = [];
 		const [day, month, year] = date.split('/');
+		const [hourStart, minuteStart, secondStart] = start.split(':');
+		const [hourEnd, minuteEnd, secondEnd] = end.split(':');
 		const isoDate = `${year}-${month}-${day}`;
-		let currentTime = new Date(isoDate + 'T' + start);
-		while (currentTime <= new Date(isoDate + 'T' + end)) {
+
+		let currentTime = new Date(isoDate);
+		currentTime.setHours(
+			Number(hourStart),
+			(Number(minuteStart), Number(secondStart))
+		);
+
+		const endDate = new Date(isoDate);
+		endDate.setHours(Number(hourEnd), (Number(minuteEnd), Number(secondEnd)));
+
+		while (currentTime < endDate) {
 			const startTime = currentTime.toTimeString().slice(0, 8);
-			currentTime.setMinutes(currentTime.getMinutes() + 90);
+			currentTime.setMinutes(currentTime.getMinutes() + 30);
 			const endTime = currentTime.toTimeString().slice(0, 8);
-			const value = [sala, date, startTime, endTime];
-			setPossibilidades((possibilidades) => [...possibilidades, value]);
+			const weekDay = getDayOfTeWeek(Number(day), Number(month), Number(year));
+			const value = [sala, date, weekDay, startTime, endTime];
+			rows.push(value);
 		}
+		setPossibilidades((possibilidades) => possibilidades.concat(rows));
 	};
 
 	/**
@@ -237,6 +252,130 @@ export default function MarcarAula() {
 
 	//Atualiza a lista de dias disponíveis com base nos arquivos de horários, salas e turmas selecionados,
 	//bem como nas unidades curriculares e curso selecionados
+	const generateDatasFromTo = (from: string, to: string) => {
+		const [dayFrom, monthFrom, yearFrom] = from.split('/');
+		const [dayTo, monthTo, yearTo] = to.split('/');
+
+		const dateFrom = new Date(`${yearFrom}-${monthFrom}-${dayFrom}`);
+		const dateTo = new Date(`${yearTo}-${monthTo}-${dayTo}`);
+
+		let currentTime = dateFrom;
+		const datas = [];
+		while (currentTime <= dateTo) {
+			datas.push(
+				`${currentTime.getDate()}/${
+					currentTime.getMonth() + 1
+				}/${currentTime.getFullYear()}`
+			);
+
+			const days = howManyDaysInTheMonth(
+				currentTime.getMonth() + 1,
+				currentTime.getFullYear()
+			);
+
+			if (currentTime.getMonth() === 11 && currentTime.getDate() === days) {
+				// console.log(
+				// 	'Vou trocar do ano para ',
+				// 	currentTime.getFullYear(),
+				// 	'para ',
+				// 	currentTime.getFullYear() + 1
+				// );
+				currentTime.setFullYear(currentTime.getFullYear() + 1, 0, 1);
+				continue;
+			}
+
+			if (currentTime.getDate() === days && currentTime.getMonth() < 11) {
+				// console.log(
+				// 	'Avancei um Mês de ',
+				// 	currentTime.getMonth(),
+				// 	'para ',
+				// 	currentTime.getMonth() + 1
+				// );
+				currentTime.setMonth(currentTime.getMonth() + 1, 1);
+				continue;
+			}
+
+			if (currentTime.getDate() < days) {
+				currentTime.setDate(currentTime.getDate() + 1);
+				continue;
+			}
+		}
+		return datas;
+	};
+
+	const howManyDaysInTheMonth = (month: number, year: number) => {
+		if (month === 2) {
+			if (isLeapYear(year)) {
+				return 29;
+			} else {
+				return 28;
+			}
+		}
+		if (month <= 7) {
+			if (month % 2 === 0) {
+				return 30;
+			} else {
+				return 31;
+			}
+		} else {
+			if (month % 2 === 0) {
+				return 31;
+			} else {
+				return 30;
+			}
+		}
+	};
+
+	const isLeapYear = (year: number) => {
+		if (year % 400 === 0 && year % 100 === 0) return true;
+
+		if (year % 100 !== 0 && year % 4 === 0) return true;
+
+		return false;
+	};
+
+	const getDayOfTeWeek = (day: number, month: number, year: number) => {
+		let t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
+		year -= month < 3 ? 1 : 0;
+
+		const result = Math.round(
+			(year + year / 4 - year / 100 + year / 400 + t[month - 1] + day) % 7
+		);
+
+		switch (result) {
+			case 0: {
+				return 'Dom';
+				break;
+			}
+			case 1: {
+				return 'Seg';
+				break;
+			}
+			case 2: {
+				return 'Ter';
+				break;
+			}
+			case 3: {
+				return 'Qua';
+				break;
+			}
+			case 4: {
+				return 'Qui';
+				break;
+			}
+			case 5: {
+				return 'Sex';
+				break;
+			}
+			case 6: {
+				return 'Sab';
+				break;
+			}
+		}
+
+		return;
+	};
+
 	useEffect(() => {
 		const mostrarDia = () => {
 			if (
@@ -246,7 +385,10 @@ export default function MarcarAula() {
 				selectedItemCurso &&
 				selectedItemTurma
 			) {
-				const columnData: any[] = horariosFile.map((row: any) => row[10]);
+				const columnData: any[] = generateDatasFromTo(
+					'01/01/2022',
+					'31/12/2024'
+				);
 				if (Array.isArray(columnData)) {
 					const uniqueItems = Array.from(new Set(columnData)).sort((a, b) => {
 						if (typeof a !== 'string' || typeof b !== 'string') {
@@ -288,12 +430,17 @@ export default function MarcarAula() {
 				selectedItemCurso &&
 				selectedItemTurma
 			) {
-				const columnData: any[] = horariosFile.map((row: any) => row[7]);
-				if (Array.isArray(columnData)) {
-					const uniqueItems = Array.from(new Set(columnData));
-					setUniqueItemsDiaSemana(uniqueItems);
-					setSelectedItemDiaSemana(uniqueItems[0]); // Seleciona o primeiro item
-				}
+				setUniqueItemsDiaSemana([
+					'Dom',
+					'Seg',
+					'Ter',
+					'Qua',
+					'Qui',
+					'Sex',
+					'Sab',
+				]);
+
+				setSelectedItemDiaSemana('Dia da Semana'); // Seleciona o primeiro item
 			}
 		};
 		mostrarDiaSemana();
@@ -330,7 +477,7 @@ export default function MarcarAula() {
 				if (Array.isArray(columnData)) {
 					const uniqueItems = Array.from(new Set(columnData));
 					setUniqueItemsSala(uniqueItems);
-					//setSelectedItemSala(uniqueItems[0]); // Seleciona o primeiro item
+					// setSelectedItemSala(uniqueItems[0]); // Seleciona o primeiro item
 				}
 			}
 		};
@@ -346,9 +493,15 @@ export default function MarcarAula() {
 	//Executa a verificação de possibilidades quando o estado 'verPossibilidades' é alterado.
 	//Verifica se todos os campos necessários estão preenchidos corretamente.
 	useEffect(() => {
-		setPossibilidades([['Sala', 'Dia', 'Hora Inicio', 'Hora Fim']]);
+		setPossibilidades([
+			['Sala', 'Dia', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
+		]);
+		let impossibilidades: any[][] = [];
+		let nomesSalas: any[] = [];
 		if (verPossibilidades) {
 			const handleVerPossibilidades = () => {
+				// Verificar se os campos estão preenchidos corretamente
+
 				if (!selectedItemHoraInicio || !selectedItemHoraFim) {
 					alert(
 						"Por favor preencha todos os campos 'Hora Inicio' e 'Hora Fim'."
@@ -377,6 +530,7 @@ export default function MarcarAula() {
 				}
 
 				// Verifica se foi selecionado um dia da semana
+				console.log('selectedDataAula: ', selectedDataAula);
 				const diaSemana =
 					selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
 				if (selectedDataAula === 'diaSemana') {
@@ -414,17 +568,18 @@ export default function MarcarAula() {
 				// Horas das aulas 08:00:00 até 22:30:00
 
 				if (capacidade) {
+					console.log('Há capacidade');
 					// Ir ao ficheiro das salas procurar sala com capacidade maior ou igual à necessária
 					const salas = salaFile
 						.slice(1)
 						.filter((row: any) => row[4] >= capacidade);
-					console.log('salas', salas);
 
 					// Transformar o resultado da pesquisa num array
 					const salasNomes = salas.map((row: any) => {
 						return row[3];
 					});
-					setNomesSalas(salasNomes);
+
+					nomesSalas = salasNomes;
 					// Ir ao ficheiro dos horários procurar horários com sala igual às salas encontradas no array salasNomes
 					const rooms = horariosFile.slice(1).filter((row: any) =>
 						salasNomes.some((sala: any) => {
@@ -435,73 +590,116 @@ export default function MarcarAula() {
 						})
 					);
 
-					setImpossibilidades(rooms);
+					console.log('Aqui, rooms: ', rooms);
+					if (rooms.length > 0) {
+						// setImpossibilidades(rooms);
+						impossibilidades = rooms;
+					}
 				} else if (espaco) {
+					console.log('Há espaço');
+
 					const rooms = horariosFile.filter(
 						(row: any) => espaco.split(';')[0] === row[12]
 					);
 
-					setNomesSalas(rooms[0][12]);
-					setImpossibilidades(rooms[0]);
-          console.log(impossibilidades);
+					nomesSalas.push(rooms[0][12]);
+					// setNomesSalas(rooms[0][12]);
+					// setImpossibilidades(rooms);
+					impossibilidades = rooms;
 				}
 
+				console.log('diaAno', diaAno);
+				console.log('diaSemana', diaSemana);
 				if (diaAno && horaInicio && horaFim) {
-					console.log(selectedItemDia);
+					console.log('Escolheu dia do ano');
 					const roomsWithDia = impossibilidades.filter(
 						(row: any) => selectedItemDia === row[10]
 					);
-					console.log(roomsWithDia);
+
+					console.log('nomesSalas', nomesSalas);
 
 					nomesSalas.map((sala: any) => {
-						generateRows(sala, selectedItemDia, '08:00:00', '22:30:00');
+						generateRows(
+							sala,
+							selectedItemDia,
+							selectedItemHoraInicio,
+							selectedItemHoraFim
+						);
 					});
 
-					setImpossibilidades(roomsWithDia);
+					// setImpossibilidades(roomsWithDia);
+					impossibilidades = roomsWithDia;
 				} else if (diaSemana && horaInicio && horaFim) {
+					console.log('Escolheu dia da semana');
+					console.log('selectedItemDiaSemana', selectedItemDiaSemana);
+					// const datas = uniqueItemsDia.filter((row: any) => {
+					// 	const [day, month, year] = row.split('/');
+					// 	// console.log(
+					// 	// 	getDayOfTeWeek(day, month, year),
+					// 	// 	getDayOfTeWeek(day, month, year) === selectedItemDiaSemana
+					// 	// );
+					// 	return getDayOfTeWeek(day, month, year) === selectedItemDiaSemana;
+					// });
+
+					uniqueItemsDia.map((data: any) => {
+						const [day, month, year] = data.split('/');
+						console.log(getDayOfTeWeek(day, month, year), data);
+					});
+
+					console.log('uniqueItemsDia', uniqueItemsDia);
+					// console.log('Datas', datas);
+
 					const roomsWithDia = impossibilidades.filter(
 						(row: any) => row[7] === selectedItemDiaSemana
 					);
 
-					const getAllDatesFromDiaSemana = horariosFile.map((row: any) => {
-						if (row[7] === selectedItemDiaSemana) return row[10];
-					});
+					// const getAllDatesFromDiaSemana = horariosFile.map((row: any) => {
+					// 	if (row[7] === selectedItemDiaSemana) return row[10];
+					// });
 
-					nomesSalas.map((sala: any) => {
-						getAllDatesFromDiaSemana.map((dia: any) => {
-							generateRows(sala, dia, '08:00:00', '22:30:00');
-						});
-					});
+					// nomesSalas.map((sala: any) => {
+					// 	getAllDatesFromDiaSemana.map((dia: any) => {
+					// 		generateRows(sala, dia, '08:00:00', '22:30:00');
+					// 	});
+					// });
 
-					setImpossibilidades(roomsWithDia);
+					// setImpossibilidades(roomsWithDia);
+					impossibilidades = roomsWithDia;
 				}
 
 				// Depois de termos as impossibilidades (linhas existentes no ficheiro dos horarios referentes aos nossos filtros)
 				// Depois de termos o ficheiro das possibilidades gerados
 				// Falta agora retirar ao ficheiro das possibilidades as impossibilidades
 
-				let newPossibilidades: any[] = [];
-				console.log('possibilidades', possibilidades);
-				impossibilidades.map((imp: any) => {
-					newPossibilidades = possibilidades.filter((poss: any) => {
-						return (
-							imp[12] === poss[0] &&
-							imp[10] === poss[1] &&
-							imp[8] === poss[2] &&
-							imp[9] === poss[3]
-						);
-					});
-				});
+				// let newPossibilidades: any[] = [];
+				// impossibilidades.map((imp: any) => {
+				// 	newPossibilidades = possibilidades.filter((poss: any) => {
+				// 		return (
+				// 			imp[12] === poss[0] &&
+				// 			imp[10] === poss[1] &&
+				// 			imp[8] === poss[2] &&
+				// 			imp[9] === poss[3]
+				// 		);
+				// 	});
+				// });
 
-				setPossibilidades((possibilidades) => [
-					possibilidades[0],
-					newPossibilidades,
-				]);
+				// setPossibilidades((possibilidades) => [
+				// 	possibilidades[0],
+				// 	newPossibilidades,
+				// ]);
 			};
 
 			handleVerPossibilidades();
 		}
 	}, [verPossibilidades]);
+
+	// useEffect(() => {
+	// 	console.log('STart');
+
+	// 	console.log('possibilidades', possibilidades);
+	// 	// console.log('impossibilidades', impossibilidades);
+	// 	// console.log('nomesSalas', nomesSalas);
+	// }, [possibilidades]); //
 
 	////////////////////////////////PAGINA HTML/////////////////////////////////
 
@@ -729,7 +927,7 @@ export default function MarcarAula() {
 									value={selectedItemDia || ''}
 									onChange={(e) => {
 										setSelectedItemDia(e.target.value);
-										setSelectedItemDiaSemana(uniqueItemsDiaSemana[0]);
+										setSelectedItemDiaSemana('diaSemana');
 									}}
 								>
 									{uniqueItemsDia.map((item: string, index: number) => (
