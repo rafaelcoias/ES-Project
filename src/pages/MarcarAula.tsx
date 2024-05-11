@@ -146,6 +146,7 @@ export default function MarcarAula() {
 		reader.readAsArrayBuffer(file);
 	};
 
+	// Criar rows com intervalos de meia hora para os parametros dados
 	const generateRows = (
 		sala: string,
 		date: string,
@@ -207,6 +208,7 @@ export default function MarcarAula() {
 		}
 	};
 
+	// Gerar lista de datas desde o dia from até ao dia to
 	const generateDatasFromTo = (from: string, to: string) => {
 		const [dayFrom, monthFrom, yearFrom] = from.split('/');
 		const [dayTo, monthTo, yearTo] = to.split('/');
@@ -258,6 +260,7 @@ export default function MarcarAula() {
 		return datas;
 	};
 
+	// Dado um mês e um ano retorna o máximo de dias que o mês tem
 	const howManyDaysInTheMonth = (month: number, year: number) => {
 		if (month === 2) {
 			if (isLeapYear(year)) {
@@ -281,6 +284,7 @@ export default function MarcarAula() {
 		}
 	};
 
+	// Retorna se o ano é bissext
 	const isLeapYear = (year: number) => {
 		if (year % 400 === 0 && year % 100 === 0) return true;
 
@@ -289,6 +293,7 @@ export default function MarcarAula() {
 		return false;
 	};
 
+	// Retorna o dia da semana referente a uma data
 	const getDayOfTheWeek = (day: number, month: number, year: number) => {
 		let t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
 		year -= month < 3 ? 1 : 0;
@@ -331,6 +336,7 @@ export default function MarcarAula() {
 		return;
 	};
 
+	// Função usada para o toggle da seleção de linhas das possibilidades
 	const toggleRowSelection = (clickedRow: any) => {
 		// Procurar a linha atual na lista de selecionadas
 		const index = selectedRows.findIndex((row) => row === clickedRow);
@@ -348,6 +354,7 @@ export default function MarcarAula() {
 		}
 	};
 
+	// Função que corre quando se clica no botão de marcar as aulas
 	const handleMarcarAula = () => {
 		// Se as rows selecionadas forem 0 não faz nada
 		if (selectedRows.length === 0) {
@@ -357,6 +364,8 @@ export default function MarcarAula() {
 			setExportFile(true);
 		}
 	};
+
+	// Converte as rows de possiblidades em rows com os mesmos parâmetros do ficheiro dos horarios
 	const convertSelectedRowsIntoHorariosFile = () => {
 		// Primeiro converter rows consecutivas em uma única linha. (8:00 -> 8:30 e 8:30 -> 9:00 para 8:00 -> 9:00)
 		const mergedRows = mergeSelectedRows();
@@ -384,6 +393,7 @@ export default function MarcarAula() {
 		return newRows;
 	};
 
+	// Funde as linhas selecionadas em uma só caso sejam consecutivas
 	const mergeSelectedRows = () => {
 		// TODO - A pessoa se a pessoa quiser marcar aulas com multiplos blocos de meia hora deve selecionar as linhas coonsecutivamente de cima para baixo para criar um unico bloco no ficheiroo dos horarios.
 
@@ -1233,6 +1243,10 @@ export default function MarcarAula() {
 				</div>
 				{showPossibiliades && showPossibiliades.length > 1 ? (
 					<div className='relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
+						<h1>
+							Selecione as linhas consecutivamente para criar um bloco de aulas
+						</h1>
+						<h1>Pode selecionar multiplos blocos de linhas</h1>
 						<table className='w-full text-left text-[.8rem] text-black'>
 							<thead>
 								<tr className='uppercase bg-white'>
