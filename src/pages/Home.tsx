@@ -117,6 +117,10 @@ export default function Home() {
         onClick={() => navigate("/MarcarAula")}
         className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
         Marcar Aula de Substituição
+      </button><button
+        onClick={() => navigate("/MarcarUC")}
+        className=" text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+        Marcar Nova UC
       </button>
       <button
         onClick={() => navigate("/HeatMapGenerator")}
