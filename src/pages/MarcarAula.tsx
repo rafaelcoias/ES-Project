@@ -385,7 +385,7 @@ export default function MarcarAula() {
 				row[3],
 				row[4],
 				row[1],
-				'',
+				selectedItemSala.split(';')[1],
 				row[0],
 			];
 		});
@@ -627,9 +627,12 @@ export default function MarcarAula() {
 					return salaWithName;
 				});
 				if (Array.isArray(columnData)) {
-					const uniqueItems = Array.from(new Set(columnData));
+					const soNome = columnData.map(
+						(row: any) => row.toString().split(';')[0]
+					);
+					const uniqueItems = Array.from(new Set(soNome));
 					setUniqueItemsSala(uniqueItems);
-					// setSelectedItemSala(uniqueItems[0]); // Seleciona o primeiro item
+					setSelectedItemSala(uniqueItems[0]); // Seleciona o primeiro item
 				}
 			}
 		};
@@ -755,11 +758,9 @@ export default function MarcarAula() {
 					// TODO - REVER
 					console.log('Há espaço');
 
-					const rooms = horariosFile.filter(
-						(row: any) => espaco.split(';')[0] === row[12]
-					);
+					const rooms = horariosFile.filter((row: any) => espaco === row[12]);
 
-					nomesSalas.push(rooms[0][12]);
+					nomesSalas.push(espaco);
 					// setNomesSalas(rooms[0][12]);
 					// setImpossibilidades(rooms);
 					impossibilidades = rooms;
@@ -769,12 +770,15 @@ export default function MarcarAula() {
 					console.log('Escolheu dia do ano');
 
 					// Ir ao ficheiro das impossibilidades procurar marcações para as salas selecionadas no dia selecionado
-					const roomsWithDia = impossibilidades.filter((row: any) => {
-						// const [horaStart,minutoStart,segundoStart] = selectedItemHoraInicio.split(':');
-						// const [horaEnd,minutoEnd,segundoEnd] = selectedItemHoraFim.split(':');
+					if (impossibilidades.length > 0) {
+						const roomsWithDia = impossibilidades.filter((row: any) => {
+							// const [horaStart,minutoStart,segundoStart] = selectedItemHoraInicio.split(':');
+							// const [horaEnd,minutoEnd,segundoEnd] = selectedItemHoraFim.split(':');
 
-						return selectedItemDia === row[10];
-					});
+							return selectedItemDia === row[10];
+						});
+						impossibilidades = roomsWithDia;
+					}
 
 					let rowsToConcat: any[][] = [];
 					nomesSalas.map((sala: any) => {
@@ -788,7 +792,6 @@ export default function MarcarAula() {
 					});
 
 					possibilidades = possibilidades.concat(rowsToConcat);
-					impossibilidades = roomsWithDia;
 				} else if (diaSemana && horaInicio && horaFim) {
 					console.log('Escolheu dia da semana');
 					console.log('selectedItemDiaSemana', selectedItemDiaSemana);
@@ -805,12 +808,15 @@ export default function MarcarAula() {
 					});
 
 					let rooms: any[][] = [];
-					nomesSalas.map((sala: any) => {
-						const filtro = impossibilidades.filter((row: any) => {
-							return row[12] === sala;
+					if (impossibilidades.length > 0) {
+						nomesSalas.map((sala: any) => {
+							const filtro = impossibilidades.filter((row: any) => {
+								return row[12] === sala;
+							});
+							rooms = rooms.concat(filtro);
 						});
-						rooms = rooms.concat(filtro);
-					});
+						impossibilidades = rooms;
+					}
 
 					let rowsToConcat: any[][] = [];
 					nomesSalas.map((sala: any) => {
@@ -826,82 +832,66 @@ export default function MarcarAula() {
 					});
 
 					possibilidades = possibilidades.concat(rowsToConcat);
-					impossibilidades = rooms;
 				}
 
 				// Depois de termos todos os registos do ficheiro dos horarios para as salas que escolhemos, como para as datas falta comparar as possibilidades, com as impossibilidades
 
 				// Para o nosso ficheiro de possibilidades temos de retirar aquelas que venham contra o que queiramos
 
-				impossibilidades.map((impRow: any) => {
-					// console.log('Impossbilidade atual = ', impRow);
-					// console.log('Data da impossibilidade', impRow[10]);
-					const fileHoraInicio = impRow[8].split(':');
-					const fileHoraFim = impRow[9].split(':');
+				if (impossibilidades.length > 0) {
+					impossibilidades.map((impRow: any) => {
+						const fileHoraInicio = impRow[8].split(':');
+						const fileHoraFim = impRow[9].split(':');
 
-					const fileStart = new Date();
-					fileStart.setHours(
-						Number(fileHoraInicio[0]),
-						Number(fileHoraInicio[1]),
-						Number(fileHoraInicio[2])
-					);
-
-					const fileEnd = new Date();
-					fileEnd.setHours(
-						Number(fileHoraFim[0]),
-						Number(fileHoraFim[1]),
-						Number(fileHoraFim[2])
-					);
-
-					// console.log(
-					// 	'Impossibilidade inicio',
-					// 	fileStart,
-					// 	'impossibilidade fim',
-					// 	fileEnd
-					// );
-					// console.log('possiblidades length', possibilidades.length);
-					// console.log('possibilidades pre poss map', possibilidades);
-					const newPoss = possibilidades.slice(1).filter((possRow: any) => {
-						// console.log(
-						// 	'----------------------------------------------------------------'
-						// );
-
-						// console.log('Possibilidade atual', possRow);
-
-						const [horaStart, minutoStart, segundoStart] =
-							possRow[3].split(':');
-						const [horaEnd, minutoEnd, segundoEnd] = possRow[4].split(':');
-						const start = new Date();
-						start.setHours(
-							Number(horaStart),
-							Number(minutoStart),
-							Number(segundoStart)
+						const fileStart = new Date();
+						fileStart.setHours(
+							Number(fileHoraInicio[0]),
+							Number(fileHoraInicio[1]),
+							Number(fileHoraInicio[2])
 						);
 
-						const end = new Date();
-						end.setHours(
-							Number(horaEnd),
-							Number(minutoEnd),
-							Number(segundoEnd)
+						const fileEnd = new Date();
+						fileEnd.setHours(
+							Number(fileHoraFim[0]),
+							Number(fileHoraFim[1]),
+							Number(fileHoraFim[2])
 						);
 
-						// console.log(
-						// 	'Possibilidade inicio',
-						// 	start,
-						// 	'Possibilidade fim',
-						// 	end
-						// );
+						const newPoss = possibilidades.slice(1).filter((possRow: any) => {
+							const [horaStart, minutoStart, segundoStart] =
+								possRow[3].split(':');
+							const [horaEnd, minutoEnd, segundoEnd] = possRow[4].split(':');
+							const start = new Date();
+							start.setHours(
+								Number(horaStart),
+								Number(minutoStart),
+								Number(segundoStart)
+							);
 
-						return !(
-							possRow[1] === impRow[10] &&
-							((fileStart >= start && fileStart <= end) ||
-								(fileEnd >= start && fileEnd <= end) ||
-								(fileStart <= start && fileEnd >= end))
-						);
+							const end = new Date();
+							end.setHours(
+								Number(horaEnd),
+								Number(minutoEnd),
+								Number(segundoEnd)
+							);
+
+							// console.log(
+							// 	'Possibilidade inicio',
+							// 	start,
+							// 	'Possibilidade fim',
+							// 	end
+							// );
+
+							return !(
+								possRow[1] === impRow[10] &&
+								((fileStart >= start && fileStart <= end) ||
+									(fileEnd >= start && fileEnd <= end) ||
+									(fileStart <= start && fileEnd >= end))
+							);
+						});
+						possibilidades = [possibilidades[0], ...newPoss];
 					});
-					possibilidades = [possibilidades[0], ...newPoss];
-				});
-				// console.log('possibilidades', possibilidades);
+				}
 				setShowPossibilidades(possibilidades);
 			};
 
@@ -1187,7 +1177,7 @@ export default function MarcarAula() {
 								setSelectedCap_Sala(e.target.value);
 								selectedCap_Sala === 'capacidade'
 									? setSelectedItemCapacidade(0)
-									: setUniqueItemsSala(uniqueItemsSala[0]);
+									: setSelectedItemSala(uniqueItemsSala[0]);
 							}}
 						>
 							<option value='espaco'>Espaço</option>
