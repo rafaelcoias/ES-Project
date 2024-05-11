@@ -5,8 +5,7 @@ import {
 	isHoraMaisRecente,
 } from '../js/auxilioEscolhaAula';
 import { useNavigate } from 'react-router-dom';
-import reportWebVitals from '../reportWebVitals';
-import { log } from 'console';
+import { exportExcel } from '../js/export';
 
 export default function MarcarAula() {
 	const navigate = useNavigate();
@@ -63,12 +62,14 @@ export default function MarcarAula() {
 	// const [impossibilidades, setImpossibilidades] = useState<any>([]);
 
 	// Vai ser populado com o geral das horas e datas menos das horas e datas presentes nas impossibilidades
-	const [possibilidades, setPossibilidades] = useState<any[][]>([
-		['Sala', 'Data', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
-	]);
+	const [showPossibiliades, setShowPossibilidades] = useState<any[][]>();
 	// const [nomesSalas, setNomesSalas] = useState<any[]>([]);
 
 	const [verPossibilidades, setVerPossibilidades] = useState<boolean>(false);
+
+	const [selectedRows, setSelectedRows] = useState<any[][]>([]);
+	const [mergedSelectedRows, setMergedSelectedRows] = useState<any[][]>([]);
+	const [exportFile, setExportFile] = useState<boolean>(false);
 
 	/**
 	 * Função para lidar com a mudança de arquivo de horários.
@@ -170,11 +171,13 @@ export default function MarcarAula() {
 			const startTime = currentTime.toTimeString().slice(0, 8);
 			currentTime.setMinutes(currentTime.getMinutes() + 30);
 			const endTime = currentTime.toTimeString().slice(0, 8);
-			const weekDay = getDayOfTeWeek(Number(day), Number(month), Number(year));
+			const weekDay = getDayOfTheWeek(Number(day), Number(month), Number(year));
 			const value = [sala, date, weekDay, startTime, endTime];
+			// console.log('value to be pushed', value);
 			rows.push(value);
 		}
-		setPossibilidades((possibilidades) => possibilidades.concat(rows));
+		// console.log('rows to be returned', rows);
+		return rows;
 	};
 
 	/**
@@ -204,54 +207,6 @@ export default function MarcarAula() {
 		}
 	};
 
-	//Função de efeito para mostrar as unidades curriculares com base no arquivo de horários selecionado.
-	//Atualiza o estado com as unidades curriculares únicas.
-	useEffect(() => {
-		const mostrarUC = () => {
-			if (horariosFile) {
-				const filteredData: any[] = horariosFile.filter(
-					(row: any) => row[2] === selectedItemCurso
-				);
-				const columnData: any[] = filteredData.map((row: any) => row[3]);
-				if (Array.isArray(columnData)) {
-					const uniqueItems = Array.from(new Set(columnData));
-					setUniqueItemsUC(uniqueItems);
-					setSelectedItemUC(uniqueItems[0]); // Seleciona o primeiro item
-				} else {
-					alert('Erro ao processar o  s dados do arquivo de horários.');
-				}
-			}
-		};
-
-		mostrarUC();
-	}, [selectedItemCurso, horariosFile, selectedItemUC]);
-
-	//Atualiza a lista de turmas com base nos arquivos de horários e salas selecionados,
-	//bem como nas unidades curriculares e curso selecionados
-	useEffect(() => {
-		const mostrarTurmas = () => {
-			if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
-				const filteredDataUC: any[] = horariosFile.filter((row: any) =>
-					row[3].includes(selectedItemUC)
-				);
-				const filteredDataCurso: any[] = filteredDataUC.filter((row: any) =>
-					row[2].includes(selectedItemCurso)
-				);
-				const columnData: any[] = filteredDataCurso.map((row: any) => row[5]);
-				if (Array.isArray(columnData)) {
-					const uniqueItems = Array.from(new Set(columnData));
-					setUniqueItemsTurma(uniqueItems);
-					setSelectedItemTurma(uniqueItems[0]); // Seleciona o primeiro item
-				} else {
-					alert('Erro ao processar os dados do arquivo de horários.');
-				}
-			}
-		};
-		mostrarTurmas();
-	}, [selectedItemUC, selectedItemCurso, horariosFile, salaFile]);
-
-	//Atualiza a lista de dias disponíveis com base nos arquivos de horários, salas e turmas selecionados,
-	//bem como nas unidades curriculares e curso selecionados
 	const generateDatasFromTo = (from: string, to: string) => {
 		const [dayFrom, monthFrom, yearFrom] = from.split('/');
 		const [dayTo, monthTo, yearTo] = to.split('/');
@@ -334,7 +289,7 @@ export default function MarcarAula() {
 		return false;
 	};
 
-	const getDayOfTeWeek = (day: number, month: number, year: number) => {
+	const getDayOfTheWeek = (day: number, month: number, year: number) => {
 		let t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
 		year -= month < 3 ? 1 : 0;
 
@@ -375,6 +330,193 @@ export default function MarcarAula() {
 
 		return;
 	};
+
+	const toggleRowSelection = (clickedRow: any) => {
+		// Procurar a linha atual na lista de selecionadas
+		const index = selectedRows.findIndex((row) => row === clickedRow);
+		if (index !== -1) {
+			// Caso o index seja diferente de -1, significa que a linha esta na lista de selecionadas
+			// E retiramos
+			setSelectedRows((prevRows) => prevRows.filter((_, i) => i !== index));
+		} else {
+			// Caso o index for -1, significa que a linha nao esta na lista de selecionadas
+			// E adicionamos
+			setSelectedRows((prevRows) => [...prevRows, clickedRow]);
+		}
+		if (exportFile) {
+			setExportFile(false);
+		}
+	};
+
+	const handleMarcarAula = () => {
+		// Se as rows selecionadas forem 0 não faz nada
+		if (selectedRows.length === 0) {
+			alert('Não estão selecionadas linhas da tabela');
+		} else {
+			// Ao clicar no botão aparece o botão para exportare
+			setExportFile(true);
+		}
+	};
+	const convertSelectedRowsIntoHorariosFile = () => {
+		// Primeiro converter rows consecutivas em uma única linha. (8:00 -> 8:30 e 8:30 -> 9:00 para 8:00 -> 9:00)
+		const mergedRows = mergeSelectedRows();
+
+		// Transformar o formato de 5 colunas para as 13 da
+		let newRows = mergedRows.map((row: any) => {
+			console.log('merged row', row);
+			return [
+				'',
+				'',
+				selectedItemCurso,
+				selectedItemUC,
+				'',
+				selectedItemTurma,
+				'',
+				row[2],
+				row[3],
+				row[4],
+				row[1],
+				'',
+				row[0],
+			];
+		});
+
+		return newRows;
+	};
+
+	const mergeSelectedRows = () => {
+		// TODO - A pessoa se a pessoa quiser marcar aulas com multiplos blocos de meia hora deve selecionar as linhas coonsecutivamente de cima para baixo para criar um unico bloco no ficheiroo dos horarios.
+
+		// Se consecutiveRows estiver vazio meto o primeiro elemento das selecionadas lá.
+		// Se o ultimo elemento das conscutive rows tiver o (mesma data, mesma sala) tempo final igual ao tempo inicial da selectedRow atual a selected row atual vai ser colocada no final da consecutiveRows.
+		// Caso não sejam consecutivas, se consecutive rows tiver dados eles são fundidos vão para o resultRows, e a selected row atual vai para o consecutive rows.
+
+		let consecutiveRows: any[] = [];
+		let resultRows: any[] = [];
+
+		for (let i = 0; i < selectedRows.length; i++) {
+			console.log(i, selectedRows[i]);
+			// Se consecutive rows não tiver dados
+			if (consecutiveRows.length === 0) {
+				console.log(i, 'nothing on consecutive rows');
+				consecutiveRows.push(selectedRows[i]);
+				continue;
+			}
+
+			// Se tiver dados vamos buscar o ultimo elemento
+			const lastConsecutiveElement =
+				consecutiveRows[consecutiveRows.length - 1];
+
+			// Se o ultimo elemento da consecutive é "igual" (condições necessárias = true) à selected row atual então a selected row vai para consecutive rows
+			if (
+				lastConsecutiveElement[0] === selectedRows[i][0] &&
+				lastConsecutiveElement[1] === selectedRows[i][1] &&
+				lastConsecutiveElement[4] === selectedRows[i][3]
+			) {
+				console.log(i, 'last in consecutive is the same as me');
+				consecutiveRows.push(selectedRows[i]);
+				continue;
+			} else {
+				// Caso o ultimo elemento da consecutive não seja "igual" (condições necessárias = true) à selected row atual então SE consecutive rows tiverem mais do que uma linha, estas são merged e SE NÃO, a selected row vai para o retorno e a selected row atual vai para o consecutive rows
+				console.log(i, 'last in consecutive is not the same as me');
+				if (consecutiveRows.length > 1) {
+					console.log(i, 'mergin what is in the consecutive');
+					const newRow = [
+						consecutiveRows[0][0],
+						consecutiveRows[0][1],
+						consecutiveRows[0][2],
+						consecutiveRows[0][3],
+						consecutiveRows[consecutiveRows.length - 1][4],
+					];
+
+					resultRows.push(newRow);
+					console.log(i, 'resultsRows updated with merged');
+					consecutiveRows = [selectedRows[i]];
+				} else {
+					console.log(i, 'results got new row ');
+					resultRows.push(consecutiveRows[0]);
+					consecutiveRows = [selectedRows[i]];
+				}
+			}
+		}
+		if (consecutiveRows.length > 1) {
+			console.log('final merger of what is in the consecutiveRows');
+			const newRow = [
+				consecutiveRows[0][0],
+				consecutiveRows[0][1],
+				consecutiveRows[0][2],
+				consecutiveRows[0][3],
+				consecutiveRows[consecutiveRows.length - 1][4],
+			];
+
+			resultRows.push(newRow);
+		} else if (consecutiveRows.length === 1) {
+			console.log('Final update on consecutive rows');
+			resultRows.push(consecutiveRows[0]);
+		}
+
+		console.log('Result rows from merging', resultRows);
+		return resultRows;
+		// setMergedSelectedRows(resultRows);
+	};
+
+	const handleExportFile = () => {
+		// Adiciona as linhas selecionadas( e convertidas) para o arquivo de horários
+		const rows = convertSelectedRowsIntoHorariosFile();
+		const newHorarios = horariosFile.concat(rows);
+		console.log('new horarios', newHorarios.slice(-5));
+		// setHorariosFile(horariosFile.concat(rows));
+		exportExcel(newHorarios, 'HorariosAulas.csv');
+	};
+
+	//Função de efeito para mostrar as unidades curriculares com base no arquivo de horários selecionado.
+	//Atualiza o estado com as unidades curriculares únicas.
+	useEffect(() => {
+		const mostrarUC = () => {
+			if (horariosFile) {
+				const filteredData: any[] = horariosFile.filter(
+					(row: any) => row[2] === selectedItemCurso
+				);
+				const columnData: any[] = filteredData.map((row: any) => row[3]);
+				if (Array.isArray(columnData)) {
+					const uniqueItems = Array.from(new Set(columnData));
+					setUniqueItemsUC(uniqueItems);
+					setSelectedItemUC(uniqueItems[0]); // Seleciona o primeiro item
+				} else {
+					alert('Erro ao processar o  s dados do arquivo de horários.');
+				}
+			}
+		};
+
+		mostrarUC();
+	}, [selectedItemCurso, horariosFile, selectedItemUC]);
+
+	//Atualiza a lista de turmas com base nos arquivos de horários e salas selecionados,
+	//bem como nas unidades curriculares e curso selecionados
+	useEffect(() => {
+		const mostrarTurmas = () => {
+			if (horariosFile && salaFile && selectedItemUC && selectedItemCurso) {
+				const filteredDataUC: any[] = horariosFile.filter((row: any) =>
+					row[3].includes(selectedItemUC)
+				);
+				const filteredDataCurso: any[] = filteredDataUC.filter((row: any) =>
+					row[2].includes(selectedItemCurso)
+				);
+				const columnData: any[] = filteredDataCurso.map((row: any) => row[5]);
+				if (Array.isArray(columnData)) {
+					const uniqueItems = Array.from(new Set(columnData));
+					setUniqueItemsTurma(uniqueItems);
+					setSelectedItemTurma(uniqueItems[0]); // Seleciona o primeiro item
+				} else {
+					alert('Erro ao processar os dados do arquivo de horários.');
+				}
+			}
+		};
+		mostrarTurmas();
+	}, [selectedItemUC, selectedItemCurso, horariosFile, salaFile]);
+
+	//Atualiza a lista de dias disponíveis com base nos arquivos de horários, salas e turmas selecionados,
+	//bem como nas unidades curriculares e curso selecionados
 
 	useEffect(() => {
 		const mostrarDia = () => {
@@ -493,11 +635,15 @@ export default function MarcarAula() {
 	//Executa a verificação de possibilidades quando o estado 'verPossibilidades' é alterado.
 	//Verifica se todos os campos necessários estão preenchidos corretamente.
 	useEffect(() => {
-		setPossibilidades([
-			['Sala', 'Dia', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
-		]);
+		// setPossibilidades([
+		// 	['Sala', 'Dia', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
+		// ]);
 		let impossibilidades: any[][] = [];
 		let nomesSalas: any[] = [];
+		let possibilidades: any[][] = [
+			['Sala', 'Dia', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
+		];
+
 		if (verPossibilidades) {
 			const handleVerPossibilidades = () => {
 				// Verificar se os campos estão preenchidos corretamente
@@ -530,7 +676,7 @@ export default function MarcarAula() {
 				}
 
 				// Verifica se foi selecionado um dia da semana
-				console.log('selectedDataAula: ', selectedDataAula);
+				// console.log('selectedDataAula: ', selectedDataAula);
 				const diaSemana =
 					selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
 				if (selectedDataAula === 'diaSemana') {
@@ -590,12 +736,13 @@ export default function MarcarAula() {
 						})
 					);
 
-					console.log('Aqui, rooms: ', rooms);
+					// console.log('Aqui, rooms: ', rooms);
 					if (rooms.length > 0) {
 						// setImpossibilidades(rooms);
 						impossibilidades = rooms;
 					}
 				} else if (espaco) {
+					// TODO - REVER
 					console.log('Há espaço');
 
 					const rooms = horariosFile.filter(
@@ -608,100 +755,157 @@ export default function MarcarAula() {
 					impossibilidades = rooms;
 				}
 
-				console.log('diaAno', diaAno);
-				console.log('diaSemana', diaSemana);
 				if (diaAno && horaInicio && horaFim) {
 					console.log('Escolheu dia do ano');
-					const roomsWithDia = impossibilidades.filter(
-						(row: any) => selectedItemDia === row[10]
-					);
 
-					console.log('nomesSalas', nomesSalas);
+					// Ir ao ficheiro das impossibilidades procurar marcações para as salas selecionadas no dia selecionado
+					const roomsWithDia = impossibilidades.filter((row: any) => {
+						// const [horaStart,minutoStart,segundoStart] = selectedItemHoraInicio.split(':');
+						// const [horaEnd,minutoEnd,segundoEnd] = selectedItemHoraFim.split(':');
 
+						return selectedItemDia === row[10];
+					});
+
+					let rowsToConcat: any[][] = [];
 					nomesSalas.map((sala: any) => {
-						generateRows(
+						const rows = generateRows(
 							sala,
 							selectedItemDia,
 							selectedItemHoraInicio,
 							selectedItemHoraFim
 						);
+						rowsToConcat = rowsToConcat.concat(rows);
 					});
 
-					// setImpossibilidades(roomsWithDia);
+					possibilidades = possibilidades.concat(rowsToConcat);
 					impossibilidades = roomsWithDia;
 				} else if (diaSemana && horaInicio && horaFim) {
 					console.log('Escolheu dia da semana');
 					console.log('selectedItemDiaSemana', selectedItemDiaSemana);
-					// const datas = uniqueItemsDia.filter((row: any) => {
-					// 	const [day, month, year] = row.split('/');
-					// 	// console.log(
-					// 	// 	getDayOfTeWeek(day, month, year),
-					// 	// 	getDayOfTeWeek(day, month, year) === selectedItemDiaSemana
-					// 	// );
-					// 	return getDayOfTeWeek(day, month, year) === selectedItemDiaSemana;
-					// });
 
-					uniqueItemsDia.map((data: any) => {
+					// Todas as datas que são o dia da semana selecionado
+					const datesByDayOfTheWeek = uniqueItemsDia.filter((data: any) => {
 						const [day, month, year] = data.split('/');
-						console.log(getDayOfTeWeek(day, month, year), data);
+						const dayOfTheWeek = getDayOfTheWeek(
+							Number(day),
+							Number(month),
+							Number(year)
+						);
+						return dayOfTheWeek === selectedItemDiaSemana;
 					});
 
-					console.log('uniqueItemsDia', uniqueItemsDia);
-					// console.log('Datas', datas);
+					let rooms: any[][] = [];
+					nomesSalas.map((sala: any) => {
+						const filtro = impossibilidades.filter((row: any) => {
+							return row[12] === sala;
+						});
+						rooms = rooms.concat(filtro);
+					});
 
-					const roomsWithDia = impossibilidades.filter(
-						(row: any) => row[7] === selectedItemDiaSemana
-					);
+					let rowsToConcat: any[][] = [];
+					nomesSalas.map((sala: any) => {
+						datesByDayOfTheWeek.map((data: any) => {
+							const rows = generateRows(
+								sala,
+								data,
+								selectedItemHoraInicio,
+								selectedItemHoraFim
+							);
+							rowsToConcat = rowsToConcat.concat(rows);
+						});
+					});
 
-					// const getAllDatesFromDiaSemana = horariosFile.map((row: any) => {
-					// 	if (row[7] === selectedItemDiaSemana) return row[10];
-					// });
-
-					// nomesSalas.map((sala: any) => {
-					// 	getAllDatesFromDiaSemana.map((dia: any) => {
-					// 		generateRows(sala, dia, '08:00:00', '22:30:00');
-					// 	});
-					// });
-
-					// setImpossibilidades(roomsWithDia);
-					impossibilidades = roomsWithDia;
+					possibilidades = possibilidades.concat(rowsToConcat);
+					impossibilidades = rooms;
 				}
 
-				// Depois de termos as impossibilidades (linhas existentes no ficheiro dos horarios referentes aos nossos filtros)
-				// Depois de termos o ficheiro das possibilidades gerados
-				// Falta agora retirar ao ficheiro das possibilidades as impossibilidades
+				// Depois de termos todos os registos do ficheiro dos horarios para as salas que escolhemos, como para as datas falta comparar as possibilidades, com as impossibilidades
 
-				// let newPossibilidades: any[] = [];
-				// impossibilidades.map((imp: any) => {
-				// 	newPossibilidades = possibilidades.filter((poss: any) => {
-				// 		return (
-				// 			imp[12] === poss[0] &&
-				// 			imp[10] === poss[1] &&
-				// 			imp[8] === poss[2] &&
-				// 			imp[9] === poss[3]
-				// 		);
-				// 	});
-				// });
+				// Para o nosso ficheiro de possibilidades temos de retirar aquelas que venham contra o que queiramos
 
-				// setPossibilidades((possibilidades) => [
-				// 	possibilidades[0],
-				// 	newPossibilidades,
-				// ]);
+				impossibilidades.map((impRow: any) => {
+					// console.log('Impossbilidade atual = ', impRow);
+					// console.log('Data da impossibilidade', impRow[10]);
+					const fileHoraInicio = impRow[8].split(':');
+					const fileHoraFim = impRow[9].split(':');
+
+					const fileStart = new Date();
+					fileStart.setHours(
+						Number(fileHoraInicio[0]),
+						Number(fileHoraInicio[1]),
+						Number(fileHoraInicio[2])
+					);
+
+					const fileEnd = new Date();
+					fileEnd.setHours(
+						Number(fileHoraFim[0]),
+						Number(fileHoraFim[1]),
+						Number(fileHoraFim[2])
+					);
+
+					// console.log(
+					// 	'Impossibilidade inicio',
+					// 	fileStart,
+					// 	'impossibilidade fim',
+					// 	fileEnd
+					// );
+					// console.log('possiblidades length', possibilidades.length);
+					// console.log('possibilidades pre poss map', possibilidades);
+					const newPoss = possibilidades.slice(1).filter((possRow: any) => {
+						// console.log(
+						// 	'----------------------------------------------------------------'
+						// );
+
+						// console.log('Possibilidade atual', possRow);
+
+						const [horaStart, minutoStart, segundoStart] =
+							possRow[3].split(':');
+						const [horaEnd, minutoEnd, segundoEnd] = possRow[4].split(':');
+						const start = new Date();
+						start.setHours(
+							Number(horaStart),
+							Number(minutoStart),
+							Number(segundoStart)
+						);
+
+						const end = new Date();
+						end.setHours(
+							Number(horaEnd),
+							Number(minutoEnd),
+							Number(segundoEnd)
+						);
+
+						// console.log(
+						// 	'Possibilidade inicio',
+						// 	start,
+						// 	'Possibilidade fim',
+						// 	end
+						// );
+
+						return !(
+							possRow[1] === impRow[10] &&
+							((fileStart >= start && fileStart <= end) ||
+								(fileEnd >= start && fileEnd <= end) ||
+								(fileStart <= start && fileEnd >= end))
+						);
+					});
+					possibilidades = [possibilidades[0], ...newPoss];
+				});
+				// console.log('possibilidades', possibilidades);
+				setShowPossibilidades(possibilidades);
 			};
 
 			handleVerPossibilidades();
 		}
 	}, [verPossibilidades]);
 
-	// useEffect(() => {
-	// 	console.log('STart');
+	useEffect(() => {
+		if (horariosFile) {
+			console.log(horariosFile.slice(-5));
+		}
+	}, [horariosFile]); //
 
-	// 	console.log('possibilidades', possibilidades);
-	// 	// console.log('impossibilidades', impossibilidades);
-	// 	// console.log('nomesSalas', nomesSalas);
-	// }, [possibilidades]); //
-
-	////////////////////////////////PAGINA HTML/////////////////////////////////
+	//////////////////////////////PAGINA HTML/////////////////////////////////
 
 	if (!uploading) {
 		return (
@@ -1027,14 +1231,14 @@ export default function MarcarAula() {
 						Ver Possibilidades
 					</button>
 				</div>
-				{possibilidades && possibilidades.length > 1 ? (
+				{showPossibiliades && showPossibiliades.length > 1 ? (
 					<div className='relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
 						<table className='w-full text-left text-[.8rem] text-black'>
 							<thead>
 								<tr className='uppercase bg-white'>
-									{possibilidades &&
-										possibilidades[0] &&
-										possibilidades[0].map((value: any, index: number) => (
+									{showPossibiliades &&
+										showPossibiliades[0] &&
+										showPossibiliades[0].map((value: any, index: number) => (
 											<th key={index} className='sticky top-0'>
 												<div className='border-[1px] border-black p-2 min-w-[10rem] bg-[white]'>
 													<p className='whitespace-nowrap'>{value}</p>
@@ -1045,30 +1249,50 @@ export default function MarcarAula() {
 							</thead>
 							{/* Body/informação da tabela */}
 							<tbody>
-								{possibilidades && possibilidades.length > 0 ? (
-									possibilidades.slice(1).map((row: any, rowIndex: number) => (
-										<tr
-											key={rowIndex}
-											className={`hover:bg-[#d8d8d8] cursor-pointer ${
-												rowIndex % 2 === 0 && 'bg-[#eeeeee]'
-											}`}
-										>
-											{/* Caso contrário, renderize os valores normais da linha*/}
-											{row.map((value: any, colIndex: number) => (
-												<td
-													key={colIndex}
-													className='p-2 border-[1px] border-black whitespace-nowrap'
-												>
-													{value}
-												</td>
-											))}
-											{/* Adicione o botão de edição na última coluna */}
-										</tr>
-									))
+								{showPossibiliades && showPossibiliades.length > 0 ? (
+									showPossibiliades.slice(1).map((row: any, rowIndex: number) =>
+										selectedRows.includes(row) ? (
+											<tr
+												key={rowIndex}
+												onClick={() => toggleRowSelection(row)}
+												className={`cursor-pointer bg-blue-600`}
+											>
+												{/* Caso contrário, renderize os valores normais da linha*/}
+												{row.map((value: any, colIndex: number) => (
+													<td
+														key={colIndex}
+														className='p-2 border-[1px] border-black whitespace-nowrap'
+													>
+														{value}
+													</td>
+												))}
+												{/* Adicione o botão de edição na última coluna */}
+											</tr>
+										) : (
+											<tr
+												key={rowIndex}
+												onClick={() => toggleRowSelection(row)}
+												className={`hover:bg-[#d8d8d8] cursor-pointer ${
+													rowIndex % 2 === 0 && 'bg-[#eeeeee]'
+												}`}
+											>
+												{/* Caso contrário, renderize os valores normais da linha*/}
+												{row.map((value: any, colIndex: number) => (
+													<td
+														key={colIndex}
+														className='p-2 border-[1px] border-black whitespace-nowrap'
+													>
+														{value}
+													</td>
+												))}
+												{/* Adicione o botão de edição na última coluna */}
+											</tr>
+										)
+									)
 								) : (
 									<tr className='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%]'>
 										<td
-											colSpan={Object.keys(possibilidades[0]).length + 1}
+											colSpan={Object.keys(showPossibiliades[0]).length + 1}
 											className='text-center text-[1.2rem]'
 										>
 											Sem resultados
@@ -1077,6 +1301,20 @@ export default function MarcarAula() {
 								)}
 							</tbody>
 						</table>
+						<button
+							onClick={() => handleMarcarAula()}
+							className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+						>
+							Marcar aula
+						</button>
+						{exportFile ? (
+							<button
+								onClick={() => handleExportFile()}
+								className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+							>
+								Exportar csv com aulas marcadas
+							</button>
+						) : null}
 					</div>
 				) : null}
 			</div>
