@@ -479,7 +479,7 @@ export default function MarcarUC() {
         setExportFile(true);
     }, [verPossibilidades]);
 
-    
+
     const handleExportFile = () => {
         // Obtenha todas as linhas de novasAulas, exceto a primeira
         const novasAulasSemCabecalho = novasAulas ? novasAulas.slice(1) : [];
@@ -545,7 +545,8 @@ export default function MarcarUC() {
 
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
+        <div className="w-full min-h-screen py-[5rem] px-[8vw] flex flex-col gap-8">
+
             <div className="absolute top-8 left-4 font-mybold text-black">
                 <button
                     onClick={() => navigate(-1)}
@@ -554,30 +555,38 @@ export default function MarcarUC() {
                 </button>
             </div>
 
-            <div className="flex flex-col items-center justify-center h-screen ">
+            <div className="flex flex-col items-center min-h-screen gap-8">
                 <h1 className="text-[1.5rem] quatro:text-[2rem] font-bold text-[var(--blue)]">
                     Marcar Nova UC
                 </h1>
+
                 <div className="w-[800px] border-2 border-black p-8 rounded-3xl">
-                    {/* Adicione os campos aqui */}
                     {showFields && (
                         <div>
-                            <label htmlFor="ucName">Nome da nova UC:</label>
-                            <input type="text" id="ucName" value={ucName} onChange={(e) => setUcName(e.target.value)} />
+                            <div className="mb-4 flex justify-between">
+                                <label htmlFor="ucName">Nome da nova UC:</label>
+                                <input className="w-[320px] border border-black rounded-md" type="text" id="ucName" value={ucName} onChange={(e) => setUcName(e.target.value)} />
+                            </div>
 
-                            <label htmlFor="ucOption">Opção:</label>
-                            <select id="ucOption" value={ucOption} onChange={(e) => setUcOption(e.target.value)}>
-                                <option value="Diurno">Diurno</option>
-                                <option value="Diurno + PL">Diurno + PL</option>
-                            </select>
-                            <label htmlFor="ucTime">Horário Diurno:</label>
-                            <select id="ucTime" value={ucTime} onChange={(e) => setUcTime(e.target.value)}>
-                                <option value="manha">Manhãs</option>
-                                <option value="tarde">Tardes</option>
-                            </select>
+                            <div className="mb-4 flex justify-between">
+                                <label htmlFor="ucOption">Opção:</label>
+                                <select className="w-[320px] border border-black rounded-md select-text" id="ucOption" value={ucOption} onChange={(e) => setUcOption(e.target.value)}>
+                                    <option value="Diurno">Diurno</option>
+                                    <option value="Diurno + PL">Diurno + PL</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-4 flex justify-between">
+                                <label htmlFor="ucTime">Horário Diurno:</label>
+                                <select className="w-[320px] border border-black rounded-md select-text" id="ucTime" value={ucTime} onChange={(e) => setUcTime(e.target.value)}>
+                                    <option value="manha">Manhãs</option>
+                                    <option value="tarde">Tardes</option>
+                                </select>
+                            </div>
+
                             <div className="mb-4 flex justify-between">
                                 <label htmlFor="selectedItemCurso" >Selecione um curso:</label>
-                                <select className="w-[320px] select-text" id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
+                                <select className="w-[320px] border border-black rounded-md select-text" id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
                                     {uniqueItemsCurso.map((item: string, index: number) => (
                                         <option key={index} value={item}>{item}</option>
                                     ))}
@@ -586,7 +595,7 @@ export default function MarcarUC() {
                             <div className="mb-4 flex justify-between">
                                 <label htmlFor="optionCap_Sala">Número de estudantes:</label>
                                 <input
-                                    className='w-[320px] select-text border border-black rounded-md pl-2 text-right' type='number' id='numEstudantes' value={numEstudantes || 0} min='0'
+                                    className='w-[320px] select-text border border-black rounded-md pl-2' type='number' id='numEstudantes' value={numEstudantes || 0} min='0'
                                     onChange={(e) => {
                                         setNumEstudantes(parseInt(e.target.value));
                                     }}
@@ -594,7 +603,7 @@ export default function MarcarUC() {
                             </div>
                             <div className="mb-4 flex justify-between">
                                 <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
-                                <select className="w-[320px] select-text" id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
+                                <select className="w-[320px] border border-black rounded-md select-text" id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
                                     <option value="espaco">Espaço</option>
                                     <option value="capacidade">Capacidade</option>
                                 </select>
@@ -604,7 +613,7 @@ export default function MarcarUC() {
                                     <>
                                         <label htmlFor='selectedItemCapacidade'>Capacidade:</label>
                                         <input
-                                            className='w-[320px] select-text border border-black rounded-md pl-2 text-right' type='number' id='selectedItemCapacidade' value={selectedItemCapacidade || 0} min='0'
+                                            className='w-[320px] select-text border border-black rounded-md pl-2' type='number' id='selectedItemCapacidade' value={selectedItemCapacidade || 0} min='0'
                                             onChange={(e) => {
                                                 setSelectedItemCapacidade(parseInt(e.target.value));
                                                 setSelectedItemSala('Tipo de Sala');
@@ -614,7 +623,7 @@ export default function MarcarUC() {
                                 ) : (
                                     <>
                                         <label htmlFor='selectedItemSala'>Espaco:</label>
-                                        <select className='w-[320px] select-text' id='selectedItemSala' value={selectedItemSala || ''}
+                                        <select className='w-[320px] border border-black rounded-md select-text' id='selectedItemSala' value={selectedItemSala || ''}
                                             onChange={(e) => {
                                                 setSelectedItemSala(e.target.value);
                                                 setSelectedItemCapacidade(0);
@@ -633,7 +642,7 @@ export default function MarcarUC() {
 
                             <div className="mb-4 flex justify-between">
                                 <label htmlFor="optionCap_Sala">Escolha um critério para o nº de aulas:</label>
-                                <select className="w-[320px] select-text" id="optionCap_Sala" value={selectedTotal_Sem || ''} onChange={(e) => setSelectedTotal_Sem(e.target.value)}>
+                                <select className="w-[320px] border border-black rounded-md select-text" id="optionCap_Sala" value={selectedTotal_Sem || ''} onChange={(e) => setSelectedTotal_Sem(e.target.value)}>
                                     <option value="total">Nº de Aulas Totais</option>
                                     <option value="semana">Aulas por Semana</option>
                                 </select>
@@ -643,7 +652,7 @@ export default function MarcarUC() {
                                     <>
                                         <label htmlFor='selectedItemTotalAulas'>Nº de Aulas Totais:</label>
                                         <input
-                                            className='w-[320px] select-text border border-black rounded-md pl-2 text-right' type='number' id='selectedAulasTotais' value={selectedAulasTotais || 0} min='0'
+                                            className='w-[320px] select-text border border-black rounded-md pl-2' type='number' id='selectedAulasTotais' value={selectedAulasTotais || 0} min='0'
                                             onChange={(e) => {
                                                 setSelectedAulasTotais(parseInt(e.target.value));
                                                 setSelectedAulasSemanais(0);
@@ -667,61 +676,60 @@ export default function MarcarUC() {
                     )}
                 </div>
 
-            </div>
-            <div className="col-span-3 flex justify-center">
-                <button onClick={() => setVerPossibilidades(!verPossibilidades)} className="mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
-                    Criar UC
-                </button>
-            </div>
-
-            <div className='relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
-
-                {novasAulas && novasAulas.length > 0 && (
-                    <table className='w-full text-left text-[.8rem] text-black'>
-                        <thead>
-                            <tr className='uppercase bg-white'>
-                                {novasAulas[0].map((header, index) => (
-                                    <th key={index} className='sticky top-0'>
-                                        <div className='border-[1px] border-black p-2 min-w-[10rem] bg-[white]'>
-                                            <p className='whitespace-nowrap'>{header}</p>
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {novasAulas.slice(1).map((row, rowIndex) => (
-                                <tr
-                                    key={rowIndex}
-                                    className={`hover:bg-[#d8d8d8] cursor-pointer ${rowIndex % 2 === 0 && 'bg-[#eeeeee]'
-                                        }`}
-                                >
-                                    {/* Caso contrário, renderize os valores normais da linha*/}
-                                    {row.map((value: any, colIndex: number) => (
-                                        <td
-                                            key={colIndex}
-                                            className='p-2 border-[1px] border-black whitespace-nowrap'
-                                        >
-                                            {value}
-                                        </td>
-                                    ))}
-                                    {/* Adicione o botão de edição na última coluna */}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                )}
-                {exportFile ? (
-                    <button
-                        onClick={() => handleExportFile()}
-                        className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
-                    >
-                        Exportar csv com aulas marcadas
+                <div className="col-span-3 flex justify-center">
+                    <button onClick={() => setVerPossibilidades(!verPossibilidades)} className=" px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+                        Criar UC
                     </button>
-                ) : null}
-            </div>
+                </div>
 
+                <div style={{ display: verPossibilidades ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[30rem] bg-white'>
+
+                    {novasAulas && novasAulas.length > 0 && (
+                        <table className='w-full border border-transparent text-left text-[.8rem] text-black'>
+                            <thead>
+                                <tr className='uppercase bg-white'>
+                                    {novasAulas[0].map((header, index) => (
+                                        <th key={index} className='sticky top-0'>
+                                            <div className='border-[1px] border-black p-2 min-w-[10rem] bg-[white]'>
+                                                <p className='whitespace-nowrap'>{header}</p>
+                                            </div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {novasAulas.slice(1).map((row, rowIndex) => (
+                                    <tr
+                                        key={rowIndex}
+                                        className={`hover:bg-[#d8d8d8] cursor-pointer ${rowIndex % 2 === 0 && 'bg-[#eeeeee]'
+                                            }`}
+                                    >
+                                        {/* Caso contrário, renderize os valores normais da linha*/}
+                                        {row.map((value: any, colIndex: number) => (
+                                            <td
+                                                key={colIndex}
+                                                className='p-2 border-[1px] border-black whitespace-nowrap'
+                                            >
+                                                {value}
+                                            </td>
+                                        ))}
+                                        {/* Adicione o botão de edição na última coluna */}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                    )}
+                </div>
+                    {exportFile ? (
+                        <button
+                            onClick={() => handleExportFile()}
+                            className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+                        >
+                            Exportar csv com aulas marcadas
+                        </button>
+                    ) : null}
+            </div>
         </div>
     )
 

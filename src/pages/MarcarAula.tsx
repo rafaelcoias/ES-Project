@@ -220,8 +220,7 @@ export default function MarcarAula() {
 		const datas = [];
 		while (currentTime <= dateTo) {
 			datas.push(
-				`${currentTime.getDate()}/${
-					currentTime.getMonth() + 1
+				`${currentTime.getDate()}/${currentTime.getMonth() + 1
 				}/${currentTime.getFullYear()}`
 			);
 
@@ -984,8 +983,10 @@ export default function MarcarAula() {
 		);
 	}
 
+
 	return (
-		<div className='flex flex-col items-center justify-center h-screen'>
+		<div className="w-full min-h-screen py-[5rem] px-[8vw] flex flex-col">
+
 			<div className='absolute top-8 left-4 font-mybold text-black'>
 				<button
 					onClick={() => navigate(-1)}
@@ -996,7 +997,11 @@ export default function MarcarAula() {
 				</button>
 			</div>
 
-			<div className='flex flex-col items-center justify-center h-screen'>
+			<div className="flex flex-col items-center min-h-screen gap-8">
+				<h1 className="text-[1.5rem] quatro:text-[2rem] font-bold text-[var(--blue)]">
+					Marcar Aula
+				</h1>
+
 				<div className='w-[800px] border-2 border-black p-8 rounded-3xl'>
 					<div className='mb-4 flex justify-between'>
 						<label htmlFor='selectedItemCurso'>Selecione um curso:</label>
@@ -1064,8 +1069,8 @@ export default function MarcarAula() {
 						<div className='ml-10 flex flex-row'>
 							<label htmlFor='selectedItemHoraInicio'>Hora Inicio:</label>
 							{selectedItemCurso !== 'Curso' &&
-							selectedItemTurma !== null &&
-							selectedItemTurma !== null ? (
+								selectedItemTurma !== null &&
+								selectedItemTurma !== null ? (
 								<select
 									className='ml-10 mr-10 w-[150px] select-text'
 									id='selectedItemHoraInicio'
@@ -1086,8 +1091,8 @@ export default function MarcarAula() {
 						<div className='flex flex-row'>
 							<label htmlFor='selectedItemHoraFim'>Hora Fim:</label>
 							{selectedItemCurso !== 'Curso' &&
-							selectedItemTurma !== null &&
-							selectedItemTurma !== null ? (
+								selectedItemTurma !== null &&
+								selectedItemTurma !== null ? (
 								<select
 									className='ml-10 mr-10 w-[150px] select-text'
 									id='selectedItemHoraFim'
@@ -1223,20 +1228,20 @@ export default function MarcarAula() {
 						)}
 					</div>
 				</div>
+
 				<div className='col-span-3 flex justify-center'>
-					<button
-						onClick={() => setVerPossibilidades(!verPossibilidades)}
-						className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
-					>
+					<button onClick={() => setVerPossibilidades(!verPossibilidades)} className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'>
 						Ver Possibilidades
 					</button>
 				</div>
-				{showPossibiliades && showPossibiliades.length > 1 ? (
-					<div className='relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
-						<h1>
-							Selecione as linhas consecutivamente para criar um bloco de aulas
-						</h1>
-						<h1>Pode selecionar multiplos blocos de linhas</h1>
+
+				<div style={{ display: verPossibilidades ? 'block' : 'none' }} className='flex justify-center'>
+					<p> Selecione as linhas consecutivamente para criar um bloco de aulas. Pode selecionar multiplos blocos de linhas.</p>
+				</div>
+
+				<div style={{ display: verPossibilidades ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
+
+					{showPossibiliades && showPossibiliades.length > 1 ? (
 						<table className='w-full text-left text-[.8rem] text-black'>
 							<thead>
 								<tr className='uppercase bg-white'>
@@ -1276,9 +1281,8 @@ export default function MarcarAula() {
 											<tr
 												key={rowIndex}
 												onClick={() => toggleRowSelection(row)}
-												className={`hover:bg-[#d8d8d8] cursor-pointer ${
-													rowIndex % 2 === 0 && 'bg-[#eeeeee]'
-												}`}
+												className={`hover:bg-[#d8d8d8] cursor-pointer ${rowIndex % 2 === 0 && 'bg-[#eeeeee]'
+													}`}
 											>
 												{/* Caso contrário, renderize os valores normais da linha*/}
 												{row.map((value: any, colIndex: number) => (
@@ -1305,22 +1309,26 @@ export default function MarcarAula() {
 								)}
 							</tbody>
 						</table>
+					) : null}
+				</div>
+
+				<div style={{ display: verPossibilidades ? 'block' : 'none' }}>
+					<button
+						onClick={() => handleMarcarAula()}
+						className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+					>
+						Marcar aula
+					</button>
+					{exportFile ? (
 						<button
-							onClick={() => handleMarcarAula()}
-							className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+							onClick={() => handleExportFile()}
+							className='ml-10 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
 						>
-							Marcar aula
+							Exportar csv com aulas marcadas
 						</button>
-						{exportFile ? (
-							<button
-								onClick={() => handleExportFile()}
-								className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
-							>
-								Exportar csv com aulas marcadas
-							</button>
-						) : null}
-					</div>
-				) : null}
+					) : null}
+
+				</div>
 			</div>
 		</div>
 	);
