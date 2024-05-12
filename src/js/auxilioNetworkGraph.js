@@ -1,3 +1,12 @@
+/**
+ * Verifica se o intervalo de tempo definido por range1 está dentro do intervalo de tempo definido por range2.
+ * 
+ * @param {string} range1Start - A hora de início de range1 no formato 'HH:mm'.
+ * @param {string} range1End - A hora de fim de range1 no formato 'HH:mm'.
+ * @param {string} range2Start - A hora de início de range2 no formato 'HH:mm'.
+ * @param {string} range2End - A hora de fim de range2 no formato 'HH:mm'.
+ * @returns {boolean} Verdadeiro se range1 estiver dentro de range2, caso contrário, falso.
+ */
 export function isTimeRangeInside(range1Start, range1End, range2Start, range2End) {
     // Converte as strings de tempo em objetos Date
     const [r1StartHours, r1StartMinutes] = range1Start.split(':').map(Number);
