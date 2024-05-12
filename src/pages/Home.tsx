@@ -113,23 +113,23 @@ export default function Home() {
       <h1 className="text-[1.5rem] quatro:text-[2rem] font-bold">
         Bem-vindo de volta!
       </h1>
-      <div className="flex w-full gap-6">
-        <div className="w-1/2 flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-4 oito:grid-cols-2">
+        <div className=" flex flex-col gap-4">
           <button
             onClick={() => navigate("/MarcarAula")}
-            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300 " >
             Marcar Aula de Substituição
           </button>
           <button
             onClick={() => navigate("/NetworkGraph")}
-            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300 ">
             Marcar nova UC
           </button>
         </div>
-        <div className="w-1/2 flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <button
             onClick={() => navigate("/HeatMapGenerator")}
-            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
+            className="text-lg px-2 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300 ">
             HeatMap
           </button>
           <button
