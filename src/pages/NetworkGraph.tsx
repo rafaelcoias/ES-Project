@@ -133,7 +133,7 @@ export default function NetworkGraph() {
             .data(linkedNodes)
             .join('circle')
             .attr('r', 10)
-            .attr('fill', '#69b3a2')
+            .attr('fill', '#0300bf')
             .call(drag(simulation));
 
         const labels = svg.append('g')
