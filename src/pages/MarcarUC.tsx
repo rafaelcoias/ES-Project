@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { generateDatasFromTo, titleCase, getDayOfTheWeek, generateRandomString, generateTimeSlots } from "../js/auxilioMarcarUC";
 import { gerarHorasPossiveis } from '../js/auxilioEscolhaAula';
-
+import { exportExcel } from '../js/export';
 export default function MarcarUC() {
 
     const navigate = useNavigate();
@@ -45,13 +45,14 @@ export default function MarcarUC() {
     const [selectedAulasSemanais, setSelectedAulasSemanais] = useState<number>(0);
     const [selectedTotal_Sem, setSelectedTotal_Sem] = useState<any>(null);
 
-    const [novasAulas, setNovasAulas] = useState<any[][]>([]);
+    const [novasAulas, setNovasAulas] = useState<any[][]>();
 
     const [uniqueItemsCurso, setUniqueItemsCurso] = useState<any>([]);
     const [selectedItemCurso, setSelectedItemCurso] = useState<any>('');
 
     const [numEstudantes, setNumEstudantes] = useState<number>(0);
 
+    const [exportFile, setExportFile] = useState<boolean>(false);
     /**
     * Função para lidar com a mudança de arquivo de horários.
     * Converte o arquivo Excel para JSON e define os dados resultantes no estado.
@@ -165,34 +166,34 @@ export default function MarcarUC() {
     useEffect(() => {
         //verificacoes dos inputs 
         if (ucName.length == 0) {
-            alert("Por favor insira o nome da nova UC")
+            alert("Por favor insira o nome da nova UC");
             return;
         }
 
         if (selectedItemCurso === 'Curso') {
-            alert("Por favor selecione um curso")
+            alert("Por favor selecione um curso");
             return;
         }
         if (selectedCap_Sala === 'capacidade') {
             if (selectedItemCapacidade === 0) {
-                alert("Por favor selecione a capacidade da sala")
+                alert("Por favor selecione a capacidade da sala");
                 return;
             }
         } else if (selectedCap_Sala === 'espaco') {
             if (selectedItemSala === 'Tipo de Sala') {
-                alert("Por favor selecione o espaço da sala")
+                alert("Por favor selecione o espaço da sala");
                 return;
             }
         }
 
         if (selectedTotal_Sem === 'total') {
             if (selectedAulasTotais === 0) {
-                alert("Por favor selecione o número de aulas totais da UC")
+                alert("Por favor selecione o número de aulas totais da UC");
                 return;
             }
         } else if (selectedTotal_Sem === 'semana') {
             if (selectedAulasSemanais === 0) {
-                alert("Por favor selecione o número de aulas semanais da UC")
+                alert("Por favor selecione o número de aulas semanais da UC");
                 return;
             }
         }
@@ -221,246 +222,275 @@ export default function MarcarUC() {
         })() : null;
 
         //gerar opcoes
-        let possibilidades = horariosFile[0];
-        const turma = horariosFile.filter((row: any[]) => row[2] === selectedItemCurso)
-        const uniqueTrumas = Array.from(new Set<any[]>(turma))
+        let possibilidades: any[][] = [horariosFile[0]]; // Copia o cabeçalho
+
+        const turma = horariosFile.filter((row: any[]) => row[2] === selectedItemCurso);
+        const uniqueTrumas = Array.from(new Set<any[]>(turma));
         const randomTurma = uniqueTrumas[Math.floor(Math.random() * uniqueTrumas.length)];
 
         const dias = generateDatasFromTo('01/01/2022', '31/12/2024');
         if (numSemanasCalculadas && salaUnica) {
-            let restante = Array.from({ length: possibilidades.length }, () => Array(selectedAulasTotais));
-            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
+            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica);
             const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)]
-            const turno = generateRandomString()
-            for (let i = 0; i < numSemanasCalculadas; i++) {
-                const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                const data = randomDia.split('/')
-                const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                const horas = generateTimeSlots(ucTime.toString())
-                const r = Math.floor(Math.random() * 2)
-                restante[i][0] = ''
-                restante[i][1] = ''
-                restante[i][2] = selectedItemCurso
-                restante[i][3] = nomeUc
-                restante[i][4] = turno
-                restante[i][5] = randomTurma[5]
-                restante[i][6] = numEstudantes
-                restante[i][7] = diaDaSemana
-                restante[i][8] = horas[r][0]
-                restante[i][9] = horas[r][1]
-                restante[i][10] = randomDia
-                restante[i][11] = caracterizacaoSalaUnique[11]
-                restante[i][12] = salaUnica
-            }
-            possibilidades = possibilidades.concat(restante);
-            if (ucOption === 'Diurno + PL') {
-                let restantePL = Array.from({ length: possibilidades.length }, () => Array(selectedAulasTotais));
-                const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
-                const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-                const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-                const turnoPL = generateRandomString()
+            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray.length === 0 ? "Informacao Indisponivel" : caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11];
+            const turno = generateRandomString();
+            for (let j = 1; j < maxSemanas / 2; j++) {
                 for (let i = 0; i < numSemanasCalculadas; i++) {
-                    const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                    const data = randomDia.split('/')
-                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                    const horas = generateTimeSlots('noite')
-                    const r = Math.floor(Math.random() * 2)
-                    restantePL[i][0] = ''
-                    restantePL[i][1] = ''
-                    restantePL[i][2] = selectedItemCurso
-                    restantePL[i][3] = nomeUc
-                    restantePL[i][4] = turnoPL
-                    restantePL[i][5] = randomTurma[5]
-                    restantePL[i][6] = numEstudantes
-                    restantePL[i][7] = diaDaSemana
-                    restantePL[i][8] = horas[r][0]
-                    restantePL[i][9] = horas[r][1]
-                    restantePL[i][10] = randomDia
-                    restantePL[i][11] = caracterizacaoSalaUnique
-                    restantePL[i][12] = salaUnica
+                    // Adiciona uma nova linha com as informações necessárias
+                    const newRow: any[] = [];
+                    const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                    const data = randomDia.split('/');
+                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                    const horas = generateTimeSlots(ucTime.toString());
+                    const r = Math.floor(Math.random() * 2);
+                    newRow[0] = '';
+                    newRow[1] = '';
+                    newRow[2] = selectedItemCurso;
+                    newRow[3] = nomeUc;
+                    newRow[4] = turno;
+                    newRow[5] = randomTurma[5];
+                    newRow[6] = numEstudantes;
+                    newRow[7] = diaDaSemana;
+                    newRow[8] = horas[r][0];
+                    newRow[9] = horas[r][1];
+                    newRow[10] = randomDia;
+                    newRow[11] = caracterizacaoSalaUnique;
+                    newRow[12] = salaUnica;
+                    possibilidades.push(newRow);
                 }
-                possibilidades = possibilidades.concat(restantePL)
             }
-            setNovasAulas(possibilidades)
+
+            if (ucOption === 'Diurno + PL') {
+                const turnoPL = generateRandomString();
+                for (let j = 1; j < maxSemanas / 2; j++) {
+                    for (let i = 0; i < numSemanasCalculadas; i++) {
+                        const newRow: any[] = [];
+                        const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                        const data = randomDia.split('/');
+                        const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                        const horas = generateTimeSlots('noite');
+                        const r = Math.floor(Math.random() * 2);
+                        newRow[0] = '';
+                        newRow[1] = '';
+                        newRow[2] = selectedItemCurso;
+                        newRow[3] = nomeUc;
+                        newRow[4] = turnoPL;
+                        newRow[5] = randomTurma[5];
+                        newRow[6] = numEstudantes;
+                        newRow[7] = diaDaSemana;
+                        newRow[8] = horas[r][0];
+                        newRow[9] = horas[r][1];
+                        newRow[10] = randomDia;
+                        newRow[11] = caracterizacaoSalaUnique;
+                        newRow[12] = salaUnica;
+                        possibilidades.push(newRow);
+                    }
+                }
+            }
+
+            setNovasAulas(possibilidades);
 
 
 
         } else if (numSemanasCalculadas && arraySalas) {
-            let restante = Array.from({ length: possibilidades.length }, () => Array(selectedAulasTotais));
-            const salaRandom = arraySalas[Math.floor(Math.random() * arraySalas.length)]
-            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaRandom)
+            const salaRandom = arraySalas[Math.floor(Math.random() * arraySalas.length)];
+            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaRandom);
             const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-            const turno = generateRandomString()
-            for (let i = 0; i < numSemanasCalculadas; i++) {
-                const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                const data = randomDia.split('/')
-                const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                const horas = generateTimeSlots(ucTime.toString())
-                const r = Math.floor(Math.random() * 2)
-                restante[i][0] = ''
-                restante[i][1] = ''
-                restante[i][2] = selectedItemCurso
-                restante[i][3] = nomeUc
-                restante[i][4] = turno
-                restante[i][5] = randomTurma[5]
-                restante[i][6] = numEstudantes
-                restante[i][7] = diaDaSemana
-                restante[i][8] = horas[r][0]
-                restante[i][9] = horas[r][1]
-                restante[i][10] = randomDia
-                restante[i][11] = caracterizacaoSalaUnique
-                restante[i][12] = salaRandom
-            }
-            possibilidades = possibilidades.concat(restante)
-            if (ucOption === 'Diurno + PL') {
-                let restantePL = Array.from({ length: possibilidades.length }, () => Array(selectedAulasTotais));
-                const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
-                const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-                const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-                const turnoPL = generateRandomString()
+            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray.length === 0 ? "Informacao Indisponivel" : caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11];
+            const turno = generateRandomString();
+            for (let j = 1; j < maxSemanas / 2; j++) {
                 for (let i = 0; i < numSemanasCalculadas; i++) {
-                    const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                    const data = randomDia.split('/')
-                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                    const horas = generateTimeSlots(ucTime.toString())
-                    const r = Math.floor(Math.random() * 2)
-                    restantePL[i][0] = ''
-                    restantePL[i][1] = ''
-                    restantePL[i][2] = selectedItemCurso
-                    restantePL[i][3] = nomeUc
-                    restantePL[i][4] = turnoPL
-                    restantePL[i][5] = randomTurma[5]
-                    restantePL[i][6] = numEstudantes
-                    restantePL[i][7] = diaDaSemana
-                    restantePL[i][8] = horas[r][0]
-                    restantePL[i][9] = horas[r][1]
-                    restantePL[i][10] = randomDia
-                    restantePL[i][11] = caracterizacaoSalaUnique
-                    restantePL[i][12] = salaRandom
+                    const newRow: any[] = [];
+                    const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                    const data = randomDia.split('/');
+                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                    const horas = generateTimeSlots(ucTime.toString());
+                    const r = Math.floor(Math.random() * 2);
+                    newRow[0] = '';
+                    newRow[1] = '';
+                    newRow[2] = selectedItemCurso;
+                    newRow[3] = nomeUc;
+                    newRow[4] = turno;
+                    newRow[5] = randomTurma[5];
+                    newRow[6] = numEstudantes;
+                    newRow[7] = diaDaSemana;
+                    newRow[8] = horas[r][0];
+                    newRow[9] = horas[r][1];
+                    newRow[10] = randomDia;
+                    newRow[11] = caracterizacaoSalaUnique;
+                    newRow[12] = salaRandom;
+                    possibilidades.push(newRow);
                 }
-                possibilidades = possibilidades.concat(restantePL)
             }
-            setNovasAulas(possibilidades)
+
+            if (ucOption === 'Diurno + PL') {
+                const turnoPL = generateRandomString();
+                for (let j = 1; j < maxSemanas / 2; j++) {
+                    for (let i = 0; i < numSemanasCalculadas; i++) {
+                        const newRow: any[] = [];
+                        const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                        const data = randomDia.split('/');
+                        const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                        const horas = generateTimeSlots(ucTime.toString());
+                        const r = Math.floor(Math.random() * 2);
+                        newRow[0] = '';
+                        newRow[1] = '';
+                        newRow[2] = selectedItemCurso;
+                        newRow[3] = nomeUc;
+                        newRow[4] = turnoPL;
+                        newRow[5] = randomTurma[5];
+                        newRow[6] = numEstudantes;
+                        newRow[7] = diaDaSemana;
+                        newRow[8] = horas[r][0];
+                        newRow[9] = horas[r][1];
+                        newRow[10] = randomDia;
+                        newRow[11] = caracterizacaoSalaUnique;
+                        newRow[12] = salaRandom;
+                        possibilidades.push(newRow);
+                    }
+                }
+            }
+            setNovasAulas(possibilidades);
 
 
 
         } else if (numAulasPorSemana && salaUnica) {
-            let restante = Array.from({ length: possibilidades.length }, () => Array(selectedAulasSemanais));
-            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
+
+            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica);
             const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-            const turno = generateRandomString()
-            for (let i = 0; i < numAulasPorSemana; i++) {
-                const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                const data = randomDia.split('/')
-                const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                const horas = generateTimeSlots(ucTime.toString())
-                const r = Math.floor(Math.random() * 2)
-                restante[i][0] = ''
-                restante[i][1] = ''
-                restante[i][2] = selectedItemCurso
-                restante[i][3] = nomeUc
-                restante[i][4] = turno
-                restante[i][5] = randomTurma[5]
-                restante[i][6] = numEstudantes
-                restante[i][7] = diaDaSemana
-                restante[i][8] = horas[r][0]
-                restante[i][9] = horas[r][1]
-                restante[i][10] = randomDia
-                restante[i][11] = caracterizacaoSalaUnique
-                restante[i][12] = salaUnica
-            }
-            possibilidades = possibilidades.concat(restante)
-            if (ucOption === 'Diurno + PL') {
-                let restantePL = Array.from({ length: possibilidades.length }, () => Array(selectedAulasSemanais));
-                const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
-                const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-                const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-                const turnoPL = generateRandomString()
+            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray.length === 0 ? "Informacao Indisponivel" : caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11];
+            const turno = generateRandomString();
+            for (let j = 1; j < maxSemanas / 2; j++) {
                 for (let i = 0; i < numAulasPorSemana; i++) {
-                    const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                    const data = randomDia.split('/')
-                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                    const horas = generateTimeSlots('noite')
-                    const r = Math.floor(Math.random() * 2)
-                    restantePL[i][0] = ''
-                    restantePL[i][1] = ''
-                    restantePL[i][2] = selectedItemCurso
-                    restantePL[i][3] = nomeUc
-                    restantePL[i][4] = turnoPL
-                    restantePL[i][5] = randomTurma[5]
-                    restantePL[i][6] = numEstudantes
-                    restantePL[i][7] = diaDaSemana
-                    restantePL[i][8] = horas[r][0]
-                    restantePL[i][9] = horas[r][1]
-                    restantePL[i][10] = randomDia
-                    restantePL[i][11] = caracterizacaoSalaUnique
-                    restantePL[i][12] = salaUnica
+                    const newRow: any[] = [];
+                    const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                    const data = randomDia.split('/');
+                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                    const horas = generateTimeSlots(ucTime.toString());
+                    const r = Math.floor(Math.random() * 2);
+                    newRow[0] = '';
+                    newRow[1] = '';
+                    newRow[2] = selectedItemCurso;
+                    newRow[3] = nomeUc;
+                    newRow[4] = turno;
+                    newRow[5] = randomTurma[5];
+                    newRow[6] = numEstudantes;
+                    newRow[7] = diaDaSemana;
+                    newRow[8] = horas[r][0];
+                    newRow[9] = horas[r][1];
+                    newRow[10] = randomDia;
+                    newRow[11] = caracterizacaoSalaUnique;
+                    newRow[12] = salaUnica;
+                    possibilidades.push(newRow);
+
                 }
-                possibilidades = possibilidades.concat(restantePL)
             }
-            setNovasAulas(possibilidades)
+
+            if (ucOption === 'Diurno + PL') {
+                const turnoPL = generateRandomString();
+                for (let j = 1; j < maxSemanas / 2; j++) {
+                    for (let i = 0; i < numAulasPorSemana; i++) {
+                        const newRow: any[] = [];
+                        const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                        const data = randomDia.split('/');
+                        const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                        const horas = generateTimeSlots('noite');
+                        const r = Math.floor(Math.random() * 2);
+                        newRow[0] = '';
+                        newRow[1] = '';
+                        newRow[2] = selectedItemCurso;
+                        newRow[3] = nomeUc;
+                        newRow[4] = turnoPL;
+                        newRow[5] = randomTurma[5];
+                        newRow[6] = numEstudantes;
+                        newRow[7] = diaDaSemana;
+                        newRow[8] = horas[r][0];
+                        newRow[9] = horas[r][1];
+                        newRow[10] = randomDia;
+                        newRow[11] = caracterizacaoSalaUnique;
+                        newRow[12] = salaUnica;
+                        possibilidades.push(newRow);
+                    }
+                }
+            }
+            setNovasAulas(possibilidades);
+
+
+
         } else if (numAulasPorSemana && arraySalas) {
-            let restante = Array.from({ length: possibilidades.length }, () => Array(selectedAulasSemanais));
-            const salaRandom = arraySalas[Math.floor(Math.random() * arraySalas.length)]
-            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaRandom)
+            const salaRandom = arraySalas[Math.floor(Math.random() * arraySalas.length)];
+            const caracterizacaoSala = horariosFile.filter(row => row[12] === salaRandom);
             const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-            const turno = generateRandomString()
-            for (let i = 0; i < numAulasPorSemana; i++) {
-                const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                const data = randomDia.split('/')
-                const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                const horas = generateTimeSlots(ucTime.toString())
-                const r = Math.floor(Math.random() * 2)
-                restante[i][0] = ''
-                restante[i][1] = ''
-                restante[i][2] = selectedItemCurso
-                restante[i][3] = nomeUc
-                restante[i][4] = turno
-                restante[i][5] = randomTurma[5]
-                restante[i][6] = numEstudantes
-                restante[i][7] = diaDaSemana
-                restante[i][8] = horas[r][0]
-                restante[i][9] = horas[r][1]
-                restante[i][10] = randomDia
-                restante[i][11] = caracterizacaoSalaUnique
-                restante[i][12] = salaRandom
-            }
-            possibilidades = possibilidades.concat(restante)
-            if (ucOption === 'Diurno + PL') {
-                let restantePL = Array.from({ length: possibilidades.length }, () => Array(selectedAulasSemanais));
-                const caracterizacaoSala = horariosFile.filter(row => row[12] === salaUnica)
-                const caracterizacaoSalaUniqueArray: any[][] = Array.from(new Set(caracterizacaoSala));
-                const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11]
-                const turnoPL = generateRandomString()
+            const caracterizacaoSalaUnique = caracterizacaoSalaUniqueArray.length === 0 ? "Informacao Indisponivel" : caracterizacaoSalaUniqueArray[Math.floor(Math.random() * caracterizacaoSalaUniqueArray.length)][11];
+            const turno = generateRandomString();
+            for (let j = 1; j < maxSemanas / 2; j++) {
                 for (let i = 0; i < numAulasPorSemana; i++) {
-                    const randomDia = dias[Math.floor(Math.random() * dias.length)]
-                    const data = randomDia.split('/')
-                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]))
-                    const horas = generateTimeSlots(ucTime.toString())
-                    const r = Math.floor(Math.random() * 2)
-                    restantePL[i][0] = ''
-                    restantePL[i][1] = ''
-                    restantePL[i][2] = selectedItemCurso
-                    restantePL[i][3] = nomeUc
-                    restantePL[i][4] = turnoPL
-                    restantePL[i][5] = randomTurma[5]
-                    restantePL[i][6] = numEstudantes
-                    restantePL[i][7] = diaDaSemana
-                    restantePL[i][8] = horas[r][0]
-                    restantePL[i][9] = horas[r][1]
-                    restantePL[i][10] = randomDia
-                    restantePL[i][11] = caracterizacaoSalaUnique
-                    restantePL[i][12] = salaRandom
+                    const newRow: any[] = [];
+                    const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                    const data = randomDia.split('/');
+                    const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                    const horas = generateTimeSlots(ucTime.toString());
+                    const r = Math.floor(Math.random() * 2);
+                    newRow[0] = '';
+                    newRow[1] = '';
+                    newRow[2] = selectedItemCurso;
+                    newRow[3] = nomeUc;
+                    newRow[4] = turno;
+                    newRow[5] = randomTurma[5];
+                    newRow[6] = numEstudantes;
+                    newRow[7] = diaDaSemana;
+                    newRow[8] = horas[r][0];
+                    newRow[9] = horas[r][1];
+                    newRow[10] = randomDia;
+                    newRow[11] = caracterizacaoSalaUnique;
+                    newRow[12] = salaRandom;
+                    possibilidades.push(newRow);
                 }
-                possibilidades = possibilidades.concat(restantePL)
             }
-            setNovasAulas(possibilidades)
+
+            if (ucOption === 'Diurno + PL') {
+                const turnoPL = generateRandomString();
+                for (let j = 1; j < maxSemanas / 2; j++) {
+                    for (let i = 0; i < numAulasPorSemana; i++) {
+                        const newRow: any[] = [];
+                        const randomDia = dias[Math.floor(Math.random() * dias.length)];
+                        const data = randomDia.split('/');
+                        const diaDaSemana = getDayOfTheWeek(parseInt(data[0]), parseInt(data[1]), parseInt(data[2]));
+                        const horas = generateTimeSlots(ucTime.toString());
+                        const r = Math.floor(Math.random() * 2);
+                        newRow[0] = '';
+                        newRow[1] = '';
+                        newRow[2] = selectedItemCurso;
+                        newRow[3] = nomeUc;
+                        newRow[4] = turnoPL;
+                        newRow[5] = randomTurma[5];
+                        newRow[6] = numEstudantes;
+                        newRow[7] = diaDaSemana;
+                        newRow[8] = horas[r][0];
+                        newRow[9] = horas[r][1];
+                        newRow[10] = randomDia;
+                        newRow[11] = caracterizacaoSalaUnique;
+                        newRow[12] = salaRandom;
+                    }
+                }
+            }
+            setNovasAulas(possibilidades);
         }
+        setExportFile(true);
     }, [verPossibilidades]);
+
+    
+    const handleExportFile = () => {
+        // Obtenha todas as linhas de novasAulas, exceto a primeira
+        const novasAulasSemCabecalho = novasAulas ? novasAulas.slice(1) : [];
+
+        // Concatene horariosFile com novasAulasSemCabecalho
+        const newHorarios = horariosFile.concat(novasAulasSemCabecalho);
+
+        // Exporte o arquivo Excel
+        exportExcel(newHorarios, 'HorariosAulas.csv');
+    };
+
 
     ////////////////////////////////PAGINA HTML/////////////////////////////////
 
@@ -643,26 +673,55 @@ export default function MarcarUC() {
                     Criar UC
                 </button>
             </div>
-            {novasAulas && novasAulas.length > 0 && (
-                <table>
-                    <thead>
-                        <tr>
-                            {novasAulas[0].map((header, index) => (
-                                <th key={index}>{header}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {novasAulas.slice(1).map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                                {row.map((cell, cellIndex) => (
-                                    <td key={cellIndex}>{cell}</td>
+
+            <div className='relative w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
+
+                {novasAulas && novasAulas.length > 0 && (
+                    <table className='w-full text-left text-[.8rem] text-black'>
+                        <thead>
+                            <tr className='uppercase bg-white'>
+                                {novasAulas[0].map((header, index) => (
+                                    <th key={index} className='sticky top-0'>
+                                        <div className='border-[1px] border-black p-2 min-w-[10rem] bg-[white]'>
+                                            <p className='whitespace-nowrap'>{header}</p>
+                                        </div>
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {novasAulas.slice(1).map((row, rowIndex) => (
+                                <tr
+                                    key={rowIndex}
+                                    className={`hover:bg-[#d8d8d8] cursor-pointer ${rowIndex % 2 === 0 && 'bg-[#eeeeee]'
+                                        }`}
+                                >
+                                    {/* Caso contrário, renderize os valores normais da linha*/}
+                                    {row.map((value: any, colIndex: number) => (
+                                        <td
+                                            key={colIndex}
+                                            className='p-2 border-[1px] border-black whitespace-nowrap'
+                                        >
+                                            {value}
+                                        </td>
+                                    ))}
+                                    {/* Adicione o botão de edição na última coluna */}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                )}
+                {exportFile ? (
+                    <button
+                        onClick={() => handleExportFile()}
+                        className='mt-16 px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
+                    >
+                        Exportar csv com aulas marcadas
+                    </button>
+                ) : null}
+            </div>
+
         </div>
     )
 
