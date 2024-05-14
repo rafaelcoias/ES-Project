@@ -7,3 +7,7 @@
 **- Nome:** Rafael Cóias | **Número de Estudante:** 105361 | **Username no GitHub:** rafaelcoias <br>
 **- Nome:** Rodrigo Valadas | **Número de Estudante** 104754 | **Username no GitHub:** RodrigoValadas <br>
 **- Nome:** Vasco Marques | **Número de Estudante:** 104555 | **Username no GitHub:** vasco4marques 
+
+## Funcionalidades implementadas
+
+Todas as propostas
