@@ -508,7 +508,7 @@ export default function MarcarUC() {
                 <div className="mt-[300px] flex justify-center items-center flex-col">
                     <div className="flex gap-4">
                         <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
-                            <p className="text-center text-lg font-bold">
+                            <p className="text-lg font-bold text-center">
                                 <span className="text-black">+</span> Upload de Horários
                             </p>
                             {!horariosFile ? (
@@ -522,7 +522,7 @@ export default function MarcarUC() {
                         </div>
 
                         <div className="flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]">
-                            <p className="text-center text-lg font-bold">
+                            <p className="text-lg font-bold text-center">
                                 <span className="text-black">+</span> Upload de Sala
                             </p>
                             {!salaFile ? (
@@ -547,7 +547,7 @@ export default function MarcarUC() {
     return (
         <div className="w-full min-h-screen py-[5rem] px-[8vw] flex flex-col gap-8">
 
-            <div className="absolute top-8 left-4 font-mybold text-black">
+            <div className="absolute text-black top-8 left-4 font-mybold">
                 <button
                     onClick={() => navigate(-1)}
                     className="absolute top-8 left-[4vw] font-mybold text-black"
@@ -563,12 +563,12 @@ export default function MarcarUC() {
                 <div className="w-[800px] border-2 border-black p-8 rounded-3xl">
                     {showFields && (
                         <div>
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="ucName">Nome da nova UC:</label>
                                 <input className="w-[320px] border border-black rounded-md" type="text" id="ucName" value={ucName} onChange={(e) => setUcName(e.target.value)} />
                             </div>
 
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="ucOption">Opção:</label>
                                 <select className="w-[320px] border border-black rounded-md select-text" id="ucOption" value={ucOption} onChange={(e) => setUcOption(e.target.value)}>
                                     <option value="Diurno">Diurno</option>
@@ -576,7 +576,7 @@ export default function MarcarUC() {
                                 </select>
                             </div>
 
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="ucTime">Horário Diurno:</label>
                                 <select className="w-[320px] border border-black rounded-md select-text" id="ucTime" value={ucTime} onChange={(e) => setUcTime(e.target.value)}>
                                     <option value="manha">Manhãs</option>
@@ -584,7 +584,7 @@ export default function MarcarUC() {
                                 </select>
                             </div>
 
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="selectedItemCurso" >Selecione um curso:</label>
                                 <select className="w-[320px] border border-black rounded-md select-text" id="selectedItemCurso" value={selectedItemCurso || ''} onChange={(e) => { setSelectedItemCurso(e.target.value); }} >
                                     {uniqueItemsCurso.map((item: string, index: number) => (
@@ -592,7 +592,7 @@ export default function MarcarUC() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="optionCap_Sala">Número de estudantes:</label>
                                 <input
                                     className='w-[320px] select-text border border-black rounded-md pl-2' type='number' id='numEstudantes' value={numEstudantes || 0} min='0'
@@ -601,14 +601,14 @@ export default function MarcarUC() {
                                     }}
                                 />
                             </div>
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="optionCap_Sala">Escolha um espaço/capacidade:</label>
                                 <select className="w-[320px] border border-black rounded-md select-text" id="optionCap_Sala" value={selectedCap_Sala || ''} onChange={(e) => setSelectedCap_Sala(e.target.value)}>
                                     <option value="espaco">Espaço</option>
                                     <option value="capacidade">Capacidade</option>
                                 </select>
                             </div>
-                            <div className='mb-4 flex justify-between'>
+                            <div className='flex justify-between mb-4'>
                                 {selectedCap_Sala === 'capacidade' ? (
                                     <>
                                         <label htmlFor='selectedItemCapacidade'>Capacidade:</label>
@@ -640,14 +640,14 @@ export default function MarcarUC() {
                                 )}
                             </div>
 
-                            <div className="mb-4 flex justify-between">
+                            <div className="flex justify-between mb-4">
                                 <label htmlFor="optionCap_Sala">Escolha um critério para o nº de aulas:</label>
                                 <select className="w-[320px] border border-black rounded-md select-text" id="optionCap_Sala" value={selectedTotal_Sem || ''} onChange={(e) => setSelectedTotal_Sem(e.target.value)}>
                                     <option value="total">Nº de Aulas Totais</option>
                                     <option value="semana">Aulas por Semana</option>
                                 </select>
                             </div>
-                            <div className='mb-4 flex justify-between'>
+                            <div className='flex justify-between mb-4'>
                                 {selectedTotal_Sem === 'total' ? (
                                     <>
                                         <label htmlFor='selectedItemTotalAulas'>Nº de Aulas Totais:</label>
@@ -676,13 +676,13 @@ export default function MarcarUC() {
                     )}
                 </div>
 
-                <div className="col-span-3 flex justify-center">
+                <div className="flex justify-center col-span-3">
                     <button onClick={() => setVerPossibilidades(!verPossibilidades)} className=" px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300">
                         Criar UC
                     </button>
                 </div>
 
-                <div style={{ display: verPossibilidades ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[30rem] bg-white'>
+                <div style={{ display: novasAulas ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[30rem] bg-white'>
 
                     {novasAulas && novasAulas.length > 0 && (
                         <table className='w-full border border-transparent text-left text-[.8rem] text-black'>
@@ -721,7 +721,7 @@ export default function MarcarUC() {
 
                     )}
                 </div>
-                    {exportFile ? (
+                    {novasAulas ? (
                         <button
                             onClick={() => handleExportFile()}
                             className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'

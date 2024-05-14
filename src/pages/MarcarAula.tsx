@@ -68,7 +68,6 @@ export default function MarcarAula() {
 	const [verPossibilidades, setVerPossibilidades] = useState<boolean>(false);
 
 	const [selectedRows, setSelectedRows] = useState<any[][]>([]);
-	const [mergedSelectedRows, setMergedSelectedRows] = useState<any[][]>([]);
 	const [exportFile, setExportFile] = useState<boolean>(false);
 
 	/**
@@ -174,10 +173,8 @@ export default function MarcarAula() {
 			const endTime = currentTime.toTimeString().slice(0, 8);
 			const weekDay = getDayOfTheWeek(Number(day), Number(month), Number(year));
 			const value = [sala, date, weekDay, startTime, endTime];
-			// console.log('value to be pushed', value);
 			rows.push(value);
 		}
-		// console.log('rows to be returned', rows);
 		return rows;
 	};
 
@@ -217,7 +214,7 @@ export default function MarcarAula() {
 		const dateTo = new Date(`${yearTo}-${monthTo}-${dayTo}`);
 
 		let currentTime = dateFrom;
-		const datas = [];
+		const datas:any = [];
 		while (currentTime <= dateTo) {
 			datas.push(
 				`${currentTime.getDate()}/${currentTime.getMonth() + 1
@@ -230,23 +227,11 @@ export default function MarcarAula() {
 			);
 
 			if (currentTime.getMonth() === 11 && currentTime.getDate() === days) {
-				// console.log(
-				// 	'Vou trocar do ano para ',
-				// 	currentTime.getFullYear(),
-				// 	'para ',
-				// 	currentTime.getFullYear() + 1
-				// );
 				currentTime.setFullYear(currentTime.getFullYear() + 1, 0, 1);
 				continue;
 			}
 
 			if (currentTime.getDate() === days && currentTime.getMonth() < 11) {
-				// console.log(
-				// 	'Avancei um Mês de ',
-				// 	currentTime.getMonth(),
-				// 	'para ',
-				// 	currentTime.getMonth() + 1
-				// );
 				currentTime.setMonth(currentTime.getMonth() + 1, 1);
 				continue;
 			}
@@ -371,7 +356,6 @@ export default function MarcarAula() {
 
 		// Transformar o formato de 5 colunas para as 13 da
 		let newRows = mergedRows.map((row: any) => {
-			console.log('merged row', row);
 			return [
 				'',
 				'',
@@ -404,10 +388,8 @@ export default function MarcarAula() {
 		let resultRows: any[] = [];
 
 		for (let i = 0; i < selectedRows.length; i++) {
-			console.log(i, selectedRows[i]);
 			// Se consecutive rows não tiver dados
 			if (consecutiveRows.length === 0) {
-				console.log(i, 'nothing on consecutive rows');
 				consecutiveRows.push(selectedRows[i]);
 				continue;
 			}
@@ -422,14 +404,11 @@ export default function MarcarAula() {
 				lastConsecutiveElement[1] === selectedRows[i][1] &&
 				lastConsecutiveElement[4] === selectedRows[i][3]
 			) {
-				console.log(i, 'last in consecutive is the same as me');
 				consecutiveRows.push(selectedRows[i]);
 				continue;
 			} else {
 				// Caso o ultimo elemento da consecutive não seja "igual" (condições necessárias = true) à selected row atual então SE consecutive rows tiverem mais do que uma linha, estas são merged e SE NÃO, a selected row vai para o retorno e a selected row atual vai para o consecutive rows
-				console.log(i, 'last in consecutive is not the same as me');
 				if (consecutiveRows.length > 1) {
-					console.log(i, 'mergin what is in the consecutive');
 					const newRow = [
 						consecutiveRows[0][0],
 						consecutiveRows[0][1],
@@ -439,17 +418,14 @@ export default function MarcarAula() {
 					];
 
 					resultRows.push(newRow);
-					console.log(i, 'resultsRows updated with merged');
 					consecutiveRows = [selectedRows[i]];
 				} else {
-					console.log(i, 'results got new row ');
 					resultRows.push(consecutiveRows[0]);
 					consecutiveRows = [selectedRows[i]];
 				}
 			}
 		}
 		if (consecutiveRows.length > 1) {
-			console.log('final merger of what is in the consecutiveRows');
 			const newRow = [
 				consecutiveRows[0][0],
 				consecutiveRows[0][1],
@@ -460,20 +436,16 @@ export default function MarcarAula() {
 
 			resultRows.push(newRow);
 		} else if (consecutiveRows.length === 1) {
-			console.log('Final update on consecutive rows');
 			resultRows.push(consecutiveRows[0]);
 		}
 
-		console.log('Result rows from merging', resultRows);
 		return resultRows;
-		// setMergedSelectedRows(resultRows);
 	};
 
 	const handleExportFile = () => {
 		// Adiciona as linhas selecionadas( e convertidas) para o arquivo de horários
 		const rows = convertSelectedRowsIntoHorariosFile();
 		const newHorarios = horariosFile.concat(rows);
-		console.log('new horarios', newHorarios.slice(-5));
 		// setHorariosFile(horariosFile.concat(rows));
 		exportExcel(newHorarios, 'HorariosAulas.csv');
 	};
@@ -647,9 +619,6 @@ export default function MarcarAula() {
 	//Executa a verificação de possibilidades quando o estado 'verPossibilidades' é alterado.
 	//Verifica se todos os campos necessários estão preenchidos corretamente.
 	useEffect(() => {
-		// setPossibilidades([
-		// 	['Sala', 'Dia', 'DiaSemana', 'Hora Inicio', 'Hora Fim'],
-		// ]);
 		let impossibilidades: any[][] = [];
 		let nomesSalas: any[] = [];
 		let possibilidades: any[][] = [
@@ -688,7 +657,6 @@ export default function MarcarAula() {
 				}
 
 				// Verifica se foi selecionado um dia da semana
-				// console.log('selectedDataAula: ', selectedDataAula);
 				const diaSemana =
 					selectedDataAula === 'diaSemana' ? selectedItemDiaSemana : null;
 				if (selectedDataAula === 'diaSemana') {
@@ -726,7 +694,6 @@ export default function MarcarAula() {
 				// Horas das aulas 08:00:00 até 22:30:00
 
 				if (capacidade) {
-					console.log('Há capacidade');
 					// Ir ao ficheiro das salas procurar sala com capacidade maior ou igual à necessária
 					const salas = salaFile
 						.slice(1)
@@ -748,31 +715,21 @@ export default function MarcarAula() {
 						})
 					);
 
-					// console.log('Aqui, rooms: ', rooms);
 					if (rooms.length > 0) {
-						// setImpossibilidades(rooms);
 						impossibilidades = rooms;
 					}
 				} else if (espaco) {
-					// TODO - REVER
-					console.log('Há espaço');
-
 					const rooms = horariosFile.filter((row: any) => espaco === row[12]);
 
 					nomesSalas.push(espaco);
-					// setNomesSalas(rooms[0][12]);
-					// setImpossibilidades(rooms);
 					impossibilidades = rooms;
 				}
 
 				if (diaAno && horaInicio && horaFim) {
-					console.log('Escolheu dia do ano');
 
 					// Ir ao ficheiro das impossibilidades procurar marcações para as salas selecionadas no dia selecionado
 					if (impossibilidades.length > 0) {
 						const roomsWithDia = impossibilidades.filter((row: any) => {
-							// const [horaStart,minutoStart,segundoStart] = selectedItemHoraInicio.split(':');
-							// const [horaEnd,minutoEnd,segundoEnd] = selectedItemHoraFim.split(':');
 
 							return selectedItemDia === row[10];
 						});
@@ -792,8 +749,6 @@ export default function MarcarAula() {
 
 					possibilidades = possibilidades.concat(rowsToConcat);
 				} else if (diaSemana && horaInicio && horaFim) {
-					console.log('Escolheu dia da semana');
-					console.log('selectedItemDiaSemana', selectedItemDiaSemana);
 
 					// Todas as datas que são o dia da semana selecionado
 					const datesByDayOfTheWeek = uniqueItemsDia.filter((data: any) => {
@@ -874,13 +829,6 @@ export default function MarcarAula() {
 								Number(segundoEnd)
 							);
 
-							// console.log(
-							// 	'Possibilidade inicio',
-							// 	start,
-							// 	'Possibilidade fim',
-							// 	end
-							// );
-
 							return !(
 								possRow[1] === impRow[10] &&
 								((fileStart >= start && fileStart <= end) ||
@@ -897,12 +845,6 @@ export default function MarcarAula() {
 			handleVerPossibilidades();
 		}
 	}, [verPossibilidades]);
-
-	useEffect(() => {
-		if (horariosFile) {
-			console.log(horariosFile.slice(-5));
-		}
-	}, [horariosFile]); //
 
 	//////////////////////////////PAGINA HTML/////////////////////////////////
 
@@ -922,7 +864,7 @@ export default function MarcarAula() {
 				<div className='mt-[300px] flex justify-center items-center flex-col'>
 					<div className='flex gap-4'>
 						<div className='flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]'>
-							<p className='text-center text-lg font-bold'>
+							<p className='text-lg font-bold text-center'>
 								<span className='text-black'>+</span> Upload de Horários
 							</p>
 							{!horariosFile ? (
@@ -947,7 +889,7 @@ export default function MarcarAula() {
 						</div>
 
 						<div className='flex flex-col gap-4 border-2 border-black p-8 rounded-[30px]'>
-							<p className='text-center text-lg font-bold'>
+							<p className='text-lg font-bold text-center'>
 								<span className='text-black'>+</span> Upload de Sala
 							</p>
 							{!salaFile ? (
@@ -987,7 +929,7 @@ export default function MarcarAula() {
 	return (
 		<div className="w-full min-h-screen py-[5rem] px-[8vw] flex flex-col">
 
-			<div className='absolute top-8 left-4 font-mybold text-black'>
+			<div className='absolute text-black top-8 left-4 font-mybold'>
 				<button
 					onClick={() => navigate(-1)}
 					className='absolute top-8 left-[4vw] font-mybold text-black'
@@ -1003,7 +945,7 @@ export default function MarcarAula() {
 				</h1>
 
 				<div className='w-[800px] border-2 border-black p-8 rounded-3xl'>
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						<label htmlFor='selectedItemCurso'>Selecione um curso:</label>
 						<select
 							className='w-[320px] select-text'
@@ -1021,7 +963,7 @@ export default function MarcarAula() {
 						</select>
 					</div>
 
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						<label htmlFor='selectedItemUC'>Selecione uma UC:</label>
 						{selectedItemCurso !== 'Curso' ? (
 							<select
@@ -1043,7 +985,7 @@ export default function MarcarAula() {
 						)}
 					</div>
 
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						<label htmlFor='selectedItemTurma'>Selecione as Turmas:</label>
 						{selectedItemCurso !== 'Curso' && selectedItemTurma !== null ? (
 							<select
@@ -1065,8 +1007,8 @@ export default function MarcarAula() {
 
 					<hr className='ml-4 w-[95%] border-gray-400 my-6' />
 
-					<div className='mb-4 flex justify-between'>
-						<div className='ml-10 flex flex-row'>
+					<div className='flex justify-between mb-4'>
+						<div className='flex flex-row ml-10'>
 							<label htmlFor='selectedItemHoraInicio'>Hora Inicio:</label>
 							{selectedItemCurso !== 'Curso' &&
 								selectedItemTurma !== null &&
@@ -1114,7 +1056,7 @@ export default function MarcarAula() {
 
 					<hr className='ml-4 w-[95%] border-gray-400 my-6' />
 
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						<label htmlFor='optionData'>Escolha uma opção de data:</label>
 						<select
 							className='w-[320px] select-text'
@@ -1126,7 +1068,7 @@ export default function MarcarAula() {
 							<option value='diaAno'>Data da aula</option>
 						</select>
 					</div>
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						{selectedDataAula === 'diaAno' ? (
 							<>
 								<label htmlFor='selectedItemDia'>Data da aula:</label>
@@ -1170,7 +1112,7 @@ export default function MarcarAula() {
 
 					<hr className='ml-4 w-[95%] border-gray-400 my-6' />
 
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						<label htmlFor='optionCap_Sala'>
 							Escolha um espaço/capacidade:
 						</label>
@@ -1189,7 +1131,7 @@ export default function MarcarAula() {
 							<option value='capacidade'>Capacidade</option>
 						</select>
 					</div>
-					<div className='mb-4 flex justify-between'>
+					<div className='flex justify-between mb-4'>
 						{selectedCap_Sala === 'capacidade' ? (
 							<>
 								<label htmlFor='selectedItemCapacidade'>Capacidade:</label>
@@ -1229,17 +1171,17 @@ export default function MarcarAula() {
 					</div>
 				</div>
 
-				<div className='col-span-3 flex justify-center'>
+				<div className='flex justify-center col-span-3'>
 					<button onClick={() => setVerPossibilidades(!verPossibilidades)} className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'>
 						Ver Possibilidades
 					</button>
 				</div>
 
-				<div style={{ display: verPossibilidades ? 'block' : 'none' }} className='flex justify-center'>
+				<div style={{ display: showPossibiliades ? 'block' : 'none' }} className='flex justify-center'>
 					<p> Selecione as linhas consecutivamente para criar um bloco de aulas. Pode selecionar multiplos blocos de linhas.</p>
 				</div>
 
-				<div style={{ display: verPossibilidades ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
+				<div style={{ display: showPossibiliades ? 'block' : 'none' }} className='w-full overflow-x-auto mb-[2rem] h-[35rem] bg-white'>
 
 					{showPossibiliades && showPossibiliades.length > 1 ? (
 						<table className='w-full text-left text-[.8rem] text-black'>
@@ -1312,7 +1254,7 @@ export default function MarcarAula() {
 					) : null}
 				</div>
 
-				<div style={{ display: verPossibilidades ? 'block' : 'none' }}>
+				<div style={{ display: showPossibiliades ? 'block' : 'none' }}>
 					<button
 						onClick={() => handleMarcarAula()}
 						className='px-8 py-3 bg-[var(--blue)] text-white rounded-[13px] hover:bg-[var(--white)] hover:text-[var(--blue)] hover:border-[var(--blue)] border border-transparent transition-all duration-300'
