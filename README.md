@@ -45,6 +45,10 @@ npm i or yarn install
 4. Run the application:
 npm start or yarn start
 
+## My Grade
+
+Grade (A-), everything done except for JUnit tests
+
 ## Authors and Acknowledgment
 - Listed team members with their roles and contributions.
 - Special thanks to faculty and collegues who contributed to the success of the project.
