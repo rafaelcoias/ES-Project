@@ -28,9 +28,9 @@ This project is developed as part of the Software Engineering course at Iscte - 
 - **Room Occupation Map**: View a heatmap showing room occupation or availability, filtered by specific criteria.
 
 ## Technologies
-- **Programming Environment**: Choice of the development group
+- **Programming Environment**: ReactJS with Typescript framework and Tailwind as CSS framework
 - **Version Control**: Git, with remote hosting on GitHub
-- **Dependency Management**: As chosen by the development group
+- **Dependency Management**: npm or yarn
 - **Testing**: JUnit or similar tools
 - **Documentation**: JavaDoc or similar tools
 - **Project Management**: Scrum approach managed via Trello integrated with GitHub
